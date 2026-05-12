@@ -1,0 +1,4 @@
+/audios/*
+  Accept-Ranges: bytes
+  Content-Type: audio/mpeg
+  Cache-Control: public, max-age=86400
