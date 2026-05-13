@@ -1,15 +1,15 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Family Trivia – AJ Games</title>
-    <meta name="description" content="El juego de preguntas para toda la familia. Hasta 5 equipos compitiendo en cultura general, actualidad, geografía, bandas sonoras y más." />
-    <meta name="author" content="Aleix Auqué" />
+    <title>Family Trivia â€“ AJ Games</title>
+    <meta name="description" content="El juego de preguntas para toda la familia. Hasta 5 equipos compitiendo en cultura general, actualidad, geografÃ­a, bandas sonoras y mÃ¡s." />
+    <meta name="author" content="Aleix AuquÃ©" />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Family Trivia – AJ Games" />
-    <meta property="og:description" content="El juego de preguntas para toda la familia. Hasta 5 equipos, 6 categorías y cientos de preguntas." />
+    <meta property="og:title" content="Family Trivia â€“ AJ Games" />
+    <meta property="og:description" content="El juego de preguntas para toda la familia. Hasta 5 equipos, 6 categorÃ­as y cientos de preguntas." />
     <meta property="og:image" content="img/FamilyTrivia.png" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Russo+One&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
@@ -35,20 +35,20 @@
         <img src="img/FamilyTrivia.png" class="intro-trivia-img" alt="Family Trivia" />
 <p class="intro-desc">
           El juego de preguntas para toda la familia.<br />
-          Hasta <strong>5 equipos</strong> compitiendo en categorías de cultura general,<br />
-          historia, actualidad, geografía, bandas sonoras y mucho más.
+          Hasta <strong>5 equipos</strong> compitiendo en categorÃ­as de cultura general,<br />
+          historia, actualidad, geografÃ­a, bandas sonoras y mucho mÃ¡s.
         </p>
         <div class="intro-stats">
           <div class="intro-stat"><span class="stat-n">5</span><span class="stat-l">equipos</span></div>
-          <div class="intro-stat"><span class="stat-n">6</span><span class="stat-l">categorías</span></div>
-          <div class="intro-stat"><span class="stat-n">∞</span><span class="stat-l">preguntas</span></div>
+          <div class="intro-stat"><span class="stat-n">6</span><span class="stat-l">categorÃ­as</span></div>
+          <div class="intro-stat"><span class="stat-n">âˆž</span><span class="stat-l">preguntas</span></div>
         </div>
         <div class="intro-btn-row">
           <button class="btn-intro-secondary" onclick="goTo('ruletas.html')">
             <i class="bi bi-people-fill"></i> Formar equipos
           </button>
           <button class="btn-salas-primary" onclick="startTrivia()">
-            <i class="bi bi-play-fill"></i> ¡Empezar!
+            <i class="bi bi-play-fill"></i> Â¡Empezar!
           </button>
         </div>
       </div>
@@ -78,12 +78,12 @@
             <div class="team flex-grow-1 team--has-header" id="team-0">
               <div class="team-name-row">
                 <div class="team-name" id="team-name-0">Equipo Rojo</div>
-                <button class="rename-btn" onclick="startRename(0)"><i class="bi bi-pencil-fill"></i></button>
+                <button class="rename-btn" onclick="startRename(0)" aria-label="Renombrar equipo 0"><i class="bi bi-pencil-fill" aria-hidden="true"></i></button>
               </div>
               <div class="comodines">
-                <span class="comodin verde" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin rojo" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin morado" onclick="this.classList.toggle('used')">C</span>
+                <button type="button" class="comodin verde" onclick="this.classList.toggle('used')" aria-label="Marcar comodín verde como usado">C</button>
+                <button type="button" class="comodin rojo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín rojo como usado">C</button>
+                <button type="button" class="comodin morado" onclick="this.classList.toggle('used')" aria-label="Marcar comodín morado como usado">C</button>
               </div>
               <div class="score-buttons">
                 <div class="row-buttons">
@@ -125,12 +125,12 @@
             <div class="team flex-grow-1 team--has-header" id="team-1">
               <div class="team-name-row">
                 <div class="team-name" id="team-name-1">Equipo Azul</div>
-                <button class="rename-btn" onclick="startRename(1)"><i class="bi bi-pencil-fill"></i></button>
+                <button class="rename-btn" onclick="startRename(1)" aria-label="Renombrar equipo 1"><i class="bi bi-pencil-fill" aria-hidden="true"></i></button>
               </div>
               <div class="comodines">
-                <span class="comodin verde" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin rojo" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin morado" onclick="this.classList.toggle('used')">C</span>
+                <button type="button" class="comodin verde" onclick="this.classList.toggle('used')" aria-label="Marcar comodín verde como usado">C</button>
+                <button type="button" class="comodin rojo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín rojo como usado">C</button>
+                <button type="button" class="comodin morado" onclick="this.classList.toggle('used')" aria-label="Marcar comodín morado como usado">C</button>
               </div>
               <div class="score-buttons">
                 <div class="row-buttons">
@@ -172,12 +172,12 @@
             <div class="team flex-grow-1 team--has-header" id="team-2">
               <div class="team-name-row">
                 <div class="team-name" id="team-name-2">Equipo Verde</div>
-                <button class="rename-btn" onclick="startRename(2)"><i class="bi bi-pencil-fill"></i></button>
+                <button class="rename-btn" onclick="startRename(2)" aria-label="Renombrar equipo 2"><i class="bi bi-pencil-fill" aria-hidden="true"></i></button>
               </div>
               <div class="comodines">
-                <span class="comodin verde" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin rojo" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin morado" onclick="this.classList.toggle('used')">C</span>
+                <button type="button" class="comodin verde" onclick="this.classList.toggle('used')" aria-label="Marcar comodín verde como usado">C</button>
+                <button type="button" class="comodin rojo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín rojo como usado">C</button>
+                <button type="button" class="comodin morado" onclick="this.classList.toggle('used')" aria-label="Marcar comodín morado como usado">C</button>
               </div>
               <div class="score-buttons">
                 <div class="row-buttons">
@@ -219,12 +219,12 @@
             <div class="team flex-grow-1 team--has-header" id="team-3">
               <div class="team-name-row">
                 <div class="team-name" id="team-name-3">Equipo Amarillo</div>
-                <button class="rename-btn" onclick="startRename(3)"><i class="bi bi-pencil-fill"></i></button>
+                <button class="rename-btn" onclick="startRename(3)" aria-label="Renombrar equipo 3"><i class="bi bi-pencil-fill" aria-hidden="true"></i></button>
               </div>
               <div class="comodines">
-                <span class="comodin verde" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin rojo" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin morado" onclick="this.classList.toggle('used')">C</span>
+                <button type="button" class="comodin verde" onclick="this.classList.toggle('used')" aria-label="Marcar comodín verde como usado">C</button>
+                <button type="button" class="comodin rojo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín rojo como usado">C</button>
+                <button type="button" class="comodin morado" onclick="this.classList.toggle('used')" aria-label="Marcar comodín morado como usado">C</button>
               </div>
               <div class="score-buttons">
                 <div class="row-buttons">
@@ -266,12 +266,12 @@
             <div class="team flex-grow-1 team--has-header" id="team-4">
               <div class="team-name-row">
                 <div class="team-name" id="team-name-4">Equipo Morado</div>
-                <button class="rename-btn" onclick="startRename(4)"><i class="bi bi-pencil-fill"></i></button>
+                <button class="rename-btn" onclick="startRename(4)" aria-label="Renombrar equipo 4"><i class="bi bi-pencil-fill" aria-hidden="true"></i></button>
               </div>
               <div class="comodines">
-                <span class="comodin verde" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin rojo" onclick="this.classList.toggle('used')">C</span>
-                <span class="comodin morado" onclick="this.classList.toggle('used')">C</span>
+                <button type="button" class="comodin verde" onclick="this.classList.toggle('used')" aria-label="Marcar comodín verde como usado">C</button>
+                <button type="button" class="comodin rojo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín rojo como usado">C</button>
+                <button type="button" class="comodin morado" onclick="this.classList.toggle('used')" aria-label="Marcar comodín morado como usado">C</button>
               </div>
               <div class="score-buttons">
                 <div class="row-buttons">
@@ -344,10 +344,10 @@
             </button>
           </div>
         </div>
-        <h2 id="questionText">Pregunta aquí</h2>
+        <h2 id="questionText">Pregunta aquÃ­</h2>
         <div id="options"></div>
         <div id="hintContainer" class="hint-container" aria-hidden="true">
-          <strong>💡 Pista:</strong>
+          <strong>ðŸ’¡ Pista:</strong>
           <div id="hintText"></div>
         </div>
 
@@ -357,7 +357,7 @@
         <div id="audioControls">
           <!-- Volume -->
           <div class="volume-control">
-            <span class="volume-icon" id="volumeIcon">🔊</span>
+            <span class="volume-icon" id="volumeIcon">ðŸ”Š</span>
             <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.85" />
           </div>
 
@@ -383,7 +383,7 @@
         </div>
 
         <div class="overlay-actions">
-          <button id="toggleRevealBtn" class="close-btn" aria-pressed="false"><i class="bi bi-film me-1"></i><span id="toggleRevealText">Revelar película</span></button>
+          <button id="toggleRevealBtn" class="close-btn" aria-pressed="false"><i class="bi bi-film me-1"></i><span id="toggleRevealText">Revelar pelÃ­cula</span></button>
           <button id="resolveBtn" class="close-btn" onclick="resolveQuestion()"><i class="bi bi-unlock-fill me-1"></i><span id="resolveBtnText">Resolver</span></button>
           <button class="close-btn" onclick="closeOverlay()">Cerrar</button>
         </div>
@@ -414,7 +414,7 @@
             </div>
           </div>
 
-          <div class="winner-announcement" id="winnerAnnouncement">EL EQUIPO GANADOR ES EL EQUIPO ROJO, ¡FELICIDADES!</div>
+          <div class="winner-announcement" id="winnerAnnouncement">EL EQUIPO GANADOR ES EL EQUIPO ROJO, Â¡FELICIDADES!</div>
           <div class="winner-score" id="winnerScore">0 Pts</div>
 
           <div class="ranking-list" id="rankingList" aria-live="polite"></div>
@@ -424,7 +424,7 @@
 
         <div class="final-actions d-flex justify-content-center align-items-center gap-3 flex-wrap">
           <button class="btn btn-outline-light px-4 py-2 fw-bold" onclick="closeFinalOverlay()">Cerrar</button>
-          <button id="toggleStatsBtn" class="btn btn-outline-light px-4 py-2 fw-bold" onclick="toggleFinalStats()">📊 Ver estadísticas</button>
+          <button id="toggleStatsBtn" class="btn btn-outline-light px-4 py-2 fw-bold" onclick="toggleFinalStats()">ðŸ“Š Ver estadÃ­sticas</button>
           <button class="btn btn-info px-4 py-2 fw-bold" onclick="resetBoardAndScores()">Reiniciar tablero y puntuaciones</button>
         </div>
       </div>

@@ -1,6 +1,18 @@
 'use strict';
 
 function goTo(page) { window.location.href = page; }
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+}
+
+function shuffle(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 // ═══════════════════════════════════════════════════════
 //  QUESTION POOL  (Cultura general + Actualidad + Geografía)
@@ -66,7 +78,6 @@ let game = {
 //  START
 // ═══════════════════════════════════════════════════════
 function startGame() {
-  const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
   const faciles   = shuffle(qPool.facil).slice(0, 2).map(q => ({ ...q, diff: 'facil'  }));
   const medias    = shuffle(qPool.media).slice(0, 2).map(q => ({ ...q, diff: 'media'  }));
   const dificiles = shuffle(qPool.dificil).slice(0, 2).map(q => ({ ...q, diff: 'dificil' }));
@@ -118,7 +129,7 @@ function renderQuestion() {
              onclick="clickScreen(${i})"
              title="Haz clic para añadir un fajo">
           <span class="opt-letter">${letter}</span>
-          <span class="opt-text">${q.o[i]}</span>
+          <span class="opt-text">${escapeHtml(q.o[i])}</span>
         </div>
         <div class="glass-table" id="glass-${i}" style="--scol:${col}">
           <div class="glass-bundles-area" id="gbundles-${i}"></div>
