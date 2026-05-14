@@ -333,13 +333,13 @@ function updateVolumeIcon() {
   if (!volumeIcon || !audio) return;
   
   if (audio.volume === 0) {
-    volumeIcon.textContent = 'ðŸ”‡';
+    volumeIcon.textContent = '🔇';
   } else if (audio.volume < 0.3) {
-    volumeIcon.textContent = 'ðŸ”ˆ';
+    volumeIcon.textContent = '🔈';
   } else if (audio.volume < 0.65) {
-    volumeIcon.textContent = 'ðŸ”‰';
+    volumeIcon.textContent = '🔉';
   } else {
-    volumeIcon.textContent = 'ðŸ”Š';
+    volumeIcon.textContent = '🔊';
   }
 }
 
@@ -494,7 +494,7 @@ function resetAllScores() {
   const statsPanel = document.getElementById('statsPanel');
   if (statsPanel) { statsPanel.innerHTML = ''; statsPanel.style.display = 'none'; }
   const toggleBtn = document.getElementById('toggleStatsBtn');
-  if (toggleBtn) { toggleBtn.style.display = 'none'; toggleBtn.innerHTML = 'ðŸ“Š Ver estadísticas'; }
+  if (toggleBtn) { toggleBtn.style.display = 'none'; toggleBtn.innerHTML = '📊 Ver estadísticas'; }
 }
 
 // ==================== AUDIO CONTROLS ====================
@@ -1078,7 +1078,7 @@ function showFinalRanking() {
 
   winnerColorEl.style.background = winner.color;
   winnerColorEl.style.boxShadow = `0 0 40px ${hexToRgba(winner.color, 0.7)}, 0 0 80px ${hexToRgba(winner.color, 0.4)}, 0 10px 40px rgba(0,0,0,0.6)`;
-  winnerAnnouncementEl.innerText = `ðŸ† ¡${winner.name.toUpperCase()} GANA LA PARTIDA! ðŸ†`;
+  winnerAnnouncementEl.innerText = `🏆 ¡${winner.name.toUpperCase()} GANA LA PARTIDA! 🏆`;
   winnerScoreEl.innerText = `${winner.score} Pts`;
   finalCard.style.borderColor = winner.color;
   finalCard.style.boxShadow = `0 28px 100px rgba(0,0,0,0.85), 0 0 40px ${hexToRgba(winner.color, 0.18)}`;
@@ -1107,7 +1107,7 @@ function showFinalRanking() {
     statsPanel.innerHTML = '';
     statsPanel.style.display = 'none';
     if (rankingListEl) rankingListEl.style.display = 'block';
-    if (toggleBtn) toggleBtn.innerHTML = 'ðŸ“Š Ver estadísticas';
+    if (toggleBtn) toggleBtn.innerHTML = '📊 Ver estadísticas';
 
     const hasCatData = categories.some(cat => categoryStats[cat]);
     const hasHistory = scoreHistory.length > 1;
@@ -1203,7 +1203,7 @@ function showFinalRanking() {
       ).join('') || '<span class="text-muted">Sin datos</span>';
       grid.appendChild(mkCard('⭐ Mejor categoría por equipo', starHtml));
 
-      grid.appendChild(mkCard('ðŸ“ˆ Más irregular',
+      grid.appendChild(mkCard('📈 Más irregular',
         mostIrregulars.length
           ? mostIrregulars.map(t =>
               `<div class="stat-hl-team"><span class="stat-hl-dot" style="background:${t.color}"></span>
@@ -1214,13 +1214,13 @@ function showFinalRanking() {
           : '<span class="text-muted">Sin datos</span>'
       ));
 
-      grid.appendChild(mkCard('ðŸ”¥ Más competida',
+      grid.appendChild(mkCard('🔥 Más competida',
         hottest
           ? `<strong>${hottest[0]}</strong><div class="stat-hl-sub">${hottest[1] > 0 ? '+' : ''}${hottest[1]} pts totales</div>`
           : '<span class="text-muted">Sin datos</span>'
       ));
 
-      grid.appendChild(mkCard('ðŸ’€ Más difícil',
+      grid.appendChild(mkCard('💀 Más difícil',
         hardest
           ? `<strong>${hardest[0]}</strong><div class="stat-hl-sub">${hardest[1] > 0 ? '+' : ''}${hardest[1]} pts totales</div>`
           : '<span class="text-muted">Sin datos</span>'
@@ -1234,7 +1234,7 @@ function showFinalRanking() {
 
       const catTitle = document.createElement('div');
       catTitle.className = 'stats-title';
-      catTitle.textContent = 'ðŸ“‹ Por categoría';
+      catTitle.textContent = '📋 Por categoría';
       statsPanel.appendChild(catTitle);
 
       categories.filter(cat => categoryStats[cat]).forEach(cat => {
@@ -1441,7 +1441,7 @@ function toggleFinalStats() {
   const showing = statsPanel && statsPanel.style.display === 'block';
   if (statsPanel) statsPanel.style.display = showing ? 'none' : 'block';
   if (rankingList) rankingList.style.display = showing ? 'block' : 'none';
-  if (btn) btn.innerHTML = showing ? 'ðŸ“Š Ver estadísticas' : 'ðŸ† Ver ranking';
+  if (btn) btn.innerHTML = showing ? '📊 Ver estadísticas' : '🏆 Ver ranking';
   if (!showing && finalChart) setTimeout(() => finalChart.resize(), 50);
 }
 

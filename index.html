@@ -24,8 +24,8 @@
         <span class="nav-logo">AJ GAMES</span>
       </div>
       <div class="nav-buttons d-flex gap-2">
-        <button class="nav-btn active" onclick="goTo('index.html')"><img src="img/Triviaicon.png" class="nav-ruleta-icon" alt=""> FamilyTrivia</button>
-        <button class="nav-btn" onclick="goTo('cashdrop.html')"><img src="img/CashDropIcon.png" class="nav-ruleta-icon" alt=""> CashDrop</button>
+        <button class="nav-btn test active" onclick="goTo('index.html')"><img src="img/Triviaicon.png" class="nav-ruleta-icon" alt=""> FamilyTrivia</button>
+        <button class="nav-btn ruletas" onclick="goTo('ruletas.html')"><i class="bi bi-shuffle"></i> Ruletas</button>
       </div>
     </nav>
 
@@ -347,7 +347,7 @@
         <h2 id="questionText">Pregunta aquí</h2>
         <div id="options"></div>
         <div id="hintContainer" class="hint-container" aria-hidden="true">
-          <strong>ðŸ’¡ Pista:</strong>
+          <strong>💡 Pista:</strong>
           <div id="hintText"></div>
         </div>
 
@@ -357,7 +357,7 @@
         <div id="audioControls">
           <!-- Volume -->
           <div class="volume-control">
-            <span class="volume-icon" id="volumeIcon">ðŸ”Š</span>
+            <span class="volume-icon" id="volumeIcon">🔊</span>
             <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.85" />
           </div>
 
@@ -424,7 +424,7 @@
 
         <div class="final-actions d-flex justify-content-center align-items-center gap-3 flex-wrap">
           <button class="btn btn-outline-light px-4 py-2 fw-bold" onclick="closeFinalOverlay()">Cerrar</button>
-          <button id="toggleStatsBtn" class="btn btn-outline-light px-4 py-2 fw-bold" onclick="toggleFinalStats()">ðŸ“Š Ver estadísticas</button>
+          <button id="toggleStatsBtn" class="btn btn-outline-light px-4 py-2 fw-bold" onclick="toggleFinalStats()">📊 Ver estadísticas</button>
           <button class="btn btn-info px-4 py-2 fw-bold" onclick="resetBoardAndScores()">Reiniciar tablero y puntuaciones</button>
         </div>
       </div>
