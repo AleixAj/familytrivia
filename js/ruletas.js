@@ -76,7 +76,7 @@ function initRuletasPage() {
     this.generateColors();
     this.renderList();
     this.draw();
-    if (this.winnerDisplayEl) this.winnerDisplayEl.innerText = 'â€”';
+    if (this.winnerDisplayEl) this.winnerDisplayEl.innerText = '—';
   };
 
   Wheel.prototype.generateColors = function() {
@@ -143,7 +143,7 @@ function initRuletasPage() {
       ctx.textAlign = 'right';
       ctx.fillStyle = 'rgba(255,255,255,0.95)';
       ctx.font = this.font;
-      const text = this.names[i] || 'â€”';
+      const text = this.names[i] || '—';
       const maxWidth = this.radius * 0.7;
       drawWrappedText(ctx, text, this.radius - 12, maxWidth, 14);
       ctx.restore();
@@ -210,7 +210,7 @@ function initRuletasPage() {
         const normalized = ((-Math.PI/2 - self.rotation) % (Math.PI*2) + (Math.PI*2)) % (Math.PI*2);
         const winnerIndex = Math.floor(normalized / anglePer) % n;
         const winner = self.names[winnerIndex];
-        if (self.winnerDisplayEl) self.winnerDisplayEl.innerText = winner || 'â€”';
+        if (self.winnerDisplayEl) self.winnerDisplayEl.innerText = winner || '—';
         if (typeof onComplete === 'function') onComplete(winnerIndex, winner);
       }
     }
@@ -245,7 +245,7 @@ function initRuletasPage() {
   }
   if (spinA) {
     spinA.addEventListener('click', () => {
-      if (wheelA.names.length === 0) { showToast('AÃ±ade al menos un nombre a la Ruleta 1'); return; }
+      if (wheelA.names.length === 0) { showToast('Añade al menos un nombre a la Ruleta 1'); return; }
       spinA.disabled = true;
       wheelA.spinToRandom(() => { spinA.disabled = false; });
     });
@@ -262,7 +262,7 @@ function initRuletasPage() {
   }
   if (spinB) {
     spinB.addEventListener('click', () => {
-      if (wheelB.names.length === 0) { showToast('AÃ±ade al menos un nombre a la Ruleta 2'); return; }
+      if (wheelB.names.length === 0) { showToast('Añade al menos un nombre a la Ruleta 2'); return; }
       spinB.disabled = true;
       wheelB.spinToRandom(() => { spinB.disabled = false; });
     });
@@ -409,7 +409,7 @@ function initRuletasPage() {
   function spinBothWheels() {
     if (wheelA.isSpinning || wheelB.isSpinning) return;
 
-    // Caso especial: ya solo queda 1 nombre en cada ruleta â†’ emparejar directamente
+    // Caso especial: ya solo queda 1 nombre en cada ruleta → emparejar directamente
     if (autoPairLastRemaining()) return;
 
     // Caso normal: al menos 1 nombre en cada ruleta
@@ -450,7 +450,7 @@ function initRuletasPage() {
         if (idxA !== -1) wheelA.removeNameAt(idxA);
         if (idxB !== -1) wheelB.removeNameAt(idxB);
 
-        // Comprobar si ahora quedan los Ãºltimos 2 (1 en cada ruleta)
+        // Comprobar si ahora quedan los últimos 2 (1 en cada ruleta)
         if (wheelA.names.length === 1 && wheelB.names.length === 1) {
           setTimeout(() => {
             autoPairLastRemaining();
@@ -471,7 +471,7 @@ function initRuletasPage() {
 
   if (clearTeamsBtn) {
     clearTeamsBtn.addEventListener('click', () => {
-      if (confirm('Â¿Quieres eliminar todos los equipos formados?')) {
+      if (confirm('¿Quieres eliminar todos los equipos formados?')) {
         teams = [];
         syncTeams();
         renderTeams();
