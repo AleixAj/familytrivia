@@ -28,11 +28,7 @@ Recorrido visual desde la pantalla de inicio hasta el ranking y las estadisticas
 
 ![Modal de pregunta con opciones A, B, C y D](img/readme/04-pregunta.png)
 
-### Respuesta correcta resaltada
-
-![Opcion correcta resaltada tras resolver](img/readme/05-respuesta.png)
-
-### Pista y explicacion
+### Respuesta correcta resaltada, además tiene el panel abierto de pista y explicacion
 
 ![Pista y texto explicativo tras revelar la respuesta](img/readme/06-pista-explicacion.png)
 
