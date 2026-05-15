@@ -3,12 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Family Trivia – AJ Games</title>
+    <link rel="icon" href="img/Triviaicon.png" type="image/png" />
+    <title>Family Trivia</title>
     <meta name="description" content="El juego de preguntas para toda la familia. Hasta 5 equipos compitiendo en cultura general, actualidad, geografía, bandas sonoras y más." />
     <meta name="author" content="Aleix Auqué" />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Family Trivia – AJ Games" />
+    <meta property="og:title" content="Family Trivia" />
     <meta property="og:description" content="El juego de preguntas para toda la familia. Hasta 5 equipos, 6 categorías y cientos de preguntas." />
     <meta property="og:image" content="img/FamilyTrivia.png" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Russo+One&display=swap" rel="stylesheet" />
@@ -19,21 +20,24 @@
   <body>
     <!-- Navbar -->
     <nav class="nav-bar">
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-controller fs-4 text-warning"></i>
-        <span class="nav-logo">AJ GAMES</span>
-      </div>
-      <div class="nav-buttons d-flex gap-2">
-        <button class="nav-btn test active" onclick="goTo('index.html')"><img src="img/Triviaicon.png" class="nav-ruleta-icon" alt=""> FamilyTrivia</button>
-        <button class="nav-btn ruletas" onclick="goTo('ruletas.html')"><i class="bi bi-shuffle"></i> Ruletas</button>
-      </div>
+      <button class="nav-brand-link" type="button" onclick="goToPortfolio()" aria-label="Ir al portfolio de Aleix AJ">
+        <span class="nav-brand-icon" aria-hidden="true"></span>
+        <span class="nav-logo">ALEIX AJ</span>
+      </button>
+      <button class="nav-title-link" type="button" onclick="goTo('index.html')" aria-label="Ir a la página principal">
+        <img src="img/FamilyTriviaName.png" class="nav-title-logo" alt="Family Trivia" />
+      </button>
+      <button class="rules-nav-btn" type="button" onclick="openRulesModal()">
+        <i class="bi bi-journal-text" aria-hidden="true"></i>
+        <span>Reglas</span>
+      </button>
     </nav>
 
     <!-- Intro screen -->
     <div id="triviaIntro">
       <div class="intro-box">
         <img src="img/FamilyTrivia.png" class="intro-trivia-img" alt="Family Trivia" />
-<p class="intro-desc">
+        <p class="intro-desc">
           El juego de preguntas para toda la familia.<br />
           Hasta <strong>5 equipos</strong> compitiendo en categorías de cultura general,<br />
           historia, actualidad, geografía, bandas sonoras y mucho más.
@@ -57,11 +61,6 @@
     <!-- Game page -->
     <div class="container game-container d-none" id="gameContainer">
 
-      <!-- Game title -->
-      <div class="text-center">
-        <img src="img/FamilyTriviaName.png" class="game-title-img" alt="Family Trivia" />
-      </div>
-
       <!-- Board -->
       <div class="board-scroll">
         <div class="board" id="board"></div>
@@ -72,7 +71,7 @@
         <div class="row g-3" id="teamsContainer">
 
           <!-- Equipo 0 -->
-          <div class="col-12 col-sm-6 col-md-4 col-lg">
+          <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-0">0 Pts</div>
             <div class="team flex-grow-1 team--has-header" id="team-0">
@@ -119,7 +118,7 @@
           </div>
 
           <!-- Equipo 1 -->
-          <div class="col-12 col-sm-6 col-md-4 col-lg">
+          <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-1">0 Pts</div>
             <div class="team flex-grow-1 team--has-header" id="team-1">
@@ -166,7 +165,7 @@
           </div>
 
           <!-- Equipo 2 -->
-          <div class="col-12 col-sm-6 col-md-4 col-lg">
+          <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-2">0 Pts</div>
             <div class="team flex-grow-1 team--has-header" id="team-2">
@@ -213,7 +212,7 @@
           </div>
 
           <!-- Equipo 3 -->
-          <div class="col-12 col-sm-6 col-md-4 col-lg">
+          <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-3">0 Pts</div>
             <div class="team flex-grow-1 team--has-header" id="team-3">
@@ -260,7 +259,7 @@
           </div>
 
           <!-- Equipo 4 -->
-          <div class="col-12 col-sm-6 col-md-4 col-lg">
+          <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-4">0 Pts</div>
             <div class="team flex-grow-1 team--has-header" id="team-4">
@@ -316,7 +315,7 @@
       </div>
 
       <div class="d-flex justify-content-center align-items-center gap-3 my-3">
-        <button class="edit-teams-btn" id="editTeamsBtn" onclick="toggleEditMode()"><i class="bi bi-pencil-fill me-1"></i>Editar equipos</button>
+        <button class="edit-teams-btn" id="editTeamsBtn" onclick="toggleEditMode()"><i class="bi bi-pencil-fill me-1"></i>Modificar nombres</button>
         <button class="reset-btn" onclick="resetAllScores()">Resetear puntuaciones</button>
         <button class="finalize-btn" onclick="goTo('ruletas.html')"><i class="bi bi-people-fill me-1"></i>Editar equipos</button>
       </div>
@@ -432,6 +431,73 @@
 
     <!-- Hidden audio player -->
     <audio id="audioPlayer" preload="metadata"></audio>
+
+    <!-- Rules modal -->
+    <div class="modal fade rules-modal" id="rulesModal" tabindex="-1" aria-labelledby="rulesModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <div class="rules-kicker">Family Trivia</div>
+              <h2 class="modal-title" id="rulesModalLabel">Reglas del juego</h2>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <section class="rules-section">
+              <h3><i class="bi bi-people-fill"></i> Preparacion</h3>
+              <p>El juego esta pensado para jugar en familia con un presentador. Lo normal es empezar en las ruletas: por ejemplo, 5 jovenes en la Ruleta 1 y 5 mayores en la Ruleta 2 para formar parejas equilibradas.</p>
+              <p>Cada equipo necesita papel o pizarra para escribir sus respuestas sin que el resto las vea.</p>
+            </section>
+
+            <section class="rules-section">
+              <h3><i class="bi bi-grid-3x3-gap-fill"></i> Rondas</h3>
+              <ul>
+                <li>El equipo al que le toca escoge una categoria y una puntuacion disponible.</li>
+                <li>El presentador abre la pregunta en la pantalla.</li>
+                <li>Todos los equipos responden a la vez escribiendo su respuesta.</li>
+                <li>Cuando el presentador lo indique, todos muestran la respuesta al mismo tiempo.</li>
+                <li>La casilla abierta queda marcada y no se puede volver a escoger.</li>
+              </ul>
+            </section>
+
+            <section class="rules-section">
+              <h3><i class="bi bi-plus-slash-minus"></i> Puntuacion</h3>
+              <ul>
+                <li>Quien acierta suma el valor completo de la casilla.</li>
+                <li>Quien falla resta la mitad del valor.</li>
+                <li>En Adivinanzas, fallar no resta puntos.</li>
+                <li>El presentador reparte los puntos manualmente desde el marcador.</li>
+              </ul>
+            </section>
+
+            <section class="rules-section">
+              <h3><i class="bi bi-music-note-beamed"></i> Tipos de pregunta</h3>
+              <ul>
+                <li>En preguntas con opciones, se escribe la opcion o respuesta correcta.</li>
+                <li>En Bandas sonoras y Disney, se apunta la pelicula, serie o cancion.</li>
+                <li>En Adivinanzas, se escribe directamente la respuesta pensada.</li>
+              </ul>
+            </section>
+
+            <section class="rules-section">
+              <h3><i class="bi bi-stars"></i> Comodines</h3>
+              <ul class="rules-jokers">
+                <li><span class="joker-dot joker-green"></span><strong>Verde:</strong> antes de responder, el presentador enseña la pista solo a ese equipo.</li>
+                <li><span class="joker-dot joker-red"></span><strong>Rojo:</strong> antes de responder, si ese equipo falla no resta puntos.</li>
+                <li><span class="joker-dot joker-purple"></span><strong>Morado:</strong> el equipo puede leer las respuestas del resto antes de escribir la suya. Si se usa en una pregunta, ningun otro equipo puede usar el morado en esa misma pregunta.</li>
+              </ul>
+              <p>Cuando un equipo usa un comodin, el presentador lo marca en el panel de puntuaciones.</p>
+            </section>
+
+            <section class="rules-section">
+              <h3><i class="bi bi-trophy-fill"></i> Fin de partida</h3>
+              <p>La partida termina cuando se han abierto todas las casillas del tablero. El presentador pulsa <strong>Finalizar partida</strong> para ver el ranking, el ganador y las estadisticas finales.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmwz+ysmXdQS32vBX8sMMd1bGvu7u" crossorigin="anonymous"></script>

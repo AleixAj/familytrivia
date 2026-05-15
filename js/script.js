@@ -24,16 +24,70 @@ function showToast(message, type = 'warning') {
 
 // ==================== NAVIGATION ====================
 function goTo(page) {
+  if (typeof saveGameState === 'function') saveGameState();
   window.location.href = page;
+}
+
+function goToGamePanel() {
+  if (typeof saveGameState === 'function') saveGameState();
+  sessionStorage.setItem('familyTriviaStartGame', '1');
+  window.location.href = 'index.html?start=1';
+}
+
+function goToPortfolio() {
+  if (typeof saveGameState === 'function') saveGameState();
+  window.location.href = 'https://aleixaj.com/';
+}
+
+function openRulesModal() {
+  const modalEl = document.getElementById('rulesModal');
+  if (!modalEl) return;
+
+  if (window.bootstrap?.Modal) {
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    return;
+  }
+
+  modalEl.classList.add('show');
+  modalEl.style.display = 'block';
+  modalEl.removeAttribute('aria-hidden');
+}
+
+function closeRulesModal() {
+  const modalEl = document.getElementById('rulesModal');
+  if (!modalEl) return;
+
+  if (window.bootstrap?.Modal) {
+    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+    return;
+  }
+
+  modalEl.classList.remove('show');
+  modalEl.style.display = 'none';
+  modalEl.setAttribute('aria-hidden', 'true');
 }
 
 function startTrivia() {
   document.getElementById('triviaIntro')?.classList.add('d-none');
   document.getElementById('gameContainer')?.classList.remove('d-none');
+  restoreGameState();
 }
 
-if (new URLSearchParams(window.location.search).get('start') === '1') {
-  document.addEventListener('DOMContentLoaded', startTrivia);
+function shouldStartGamePanel() {
+  return new URLSearchParams(window.location.search).get('start') === '1'
+    || sessionStorage.getItem('familyTriviaStartGame') === '1';
+}
+
+function startGamePanelFromNavigation() {
+  if (!shouldStartGamePanel()) return;
+  sessionStorage.removeItem('familyTriviaStartGame');
+  startTrivia();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startGamePanelFromNavigation);
+} else {
+  startGamePanelFromNavigation();
 }
 
 function highlightActiveButton() {
@@ -275,7 +329,10 @@ function buildBoard() {
       btn.className = 'value';
       btn.id = `btn-${r}-${c}`;
       btn.textContent = values[r];
-      btn.addEventListener('click', () => openQuestion(r, c, btn));
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('disabled')) return;
+        openQuestion(r, c, btn);
+      });
       board.appendChild(btn);
     }
   }
@@ -443,6 +500,7 @@ function adjustScore(teamIndex, delta) {
     if (!categoryStats[lastPlayedCategory]) categoryStats[lastPlayedCategory] = {};
     categoryStats[lastPlayedCategory][teamIndex] = (categoryStats[lastPlayedCategory][teamIndex] || 0) + delta;
   }
+  saveGameState();
 }
 
 const scoreRowMap = {
@@ -482,6 +540,7 @@ function resetTeam(teamIndex) {
   if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex > 4) return;
   teamScores[teamIndex] = 0;
   renderScore(teamIndex);
+  saveGameState();
 }
 
 function resetAllScores() {
@@ -495,6 +554,7 @@ function resetAllScores() {
   if (statsPanel) { statsPanel.innerHTML = ''; statsPanel.style.display = 'none'; }
   const toggleBtn = document.getElementById('toggleStatsBtn');
   if (toggleBtn) { toggleBtn.style.display = 'none'; toggleBtn.innerHTML = '📊 Ver estadísticas'; }
+  saveGameState();
 }
 
 // ==================== AUDIO CONTROLS ====================
@@ -535,13 +595,6 @@ function resetAudioControls() {
 // ==================== INDEX PAGE INIT ====================
 function initIndexPage() {
   if (!document.getElementById('overlay')) return;
-
-  const _idxNavType = (performance.getEntriesByType?.('navigation')?.[0]?.type)
-    ?? (performance.navigation?.type === 1 ? 'reload' : 'navigate');
-  if (_idxNavType === 'reload') {
-    localStorage.removeItem('ruletaTeamNames');
-    sessionStorage.removeItem('ruletaTeams');
-  }
 
   const savedTeams = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
   for (let i = 0; i < 5; i++) {
@@ -614,6 +667,7 @@ function initIndexPage() {
           currentButton.onclick = null;
           currentButton.setAttribute('aria-disabled', 'true');
         }
+        saveGameState();
       } else {
         // OCULTAR + REACTIVAR el botón del tablero
         hiddenAnswerDiv.innerText = '';
@@ -626,8 +680,12 @@ function initIndexPage() {
         if (currentButton) {
           currentButton.classList.remove('disabled');
           currentButton.setAttribute('aria-disabled', 'false');
-          currentButton.onclick = () => openQuestion(currentRow, currentCol, currentButton);
+          currentButton.onclick = () => {
+            if (currentButton.classList.contains('disabled')) return;
+            openQuestion(currentRow, currentCol, currentButton);
+          };
         }
+        saveGameState();
       }
     });
   }
@@ -688,6 +746,181 @@ let finalChart = null;
 // Preguntas usadas por categoría + dificultad (evita duplicados dentro de facil/media/dificil)
 let usedQuestionsByPool = {};   // clave: "Categoria-dificultad" → Set de preguntas usadas
 
+// ==================== GAME STATE PERSISTENCE ====================
+const GAME_STATE_KEY = 'familyTriviaGameState';
+
+function getNavigationType() {
+  return (performance.getEntriesByType?.('navigation')?.[0]?.type)
+    ?? (performance.navigation?.type === 1 ? 'reload' : 'navigate');
+}
+
+function clearSavedGame() {
+  sessionStorage.removeItem(GAME_STATE_KEY);
+  sessionStorage.removeItem('ruletaTeams');
+  localStorage.removeItem('ruletaTeamNames');
+}
+
+function clearSavedGameOnReload() {
+  if (getNavigationType() === 'reload') clearSavedGame();
+}
+
+function isIndexGamePage() {
+  return Boolean(document.getElementById('board') && document.getElementById('gameContainer'));
+}
+
+function getPoolKeyFromCell(cellKey) {
+  const [row, col] = cellKey.split('-').map(Number);
+  const categoryName = categories[col];
+  const points = values[row];
+  if (!categoryName || !points) return null;
+  const difficulty = getDifficulty(points);
+  return { categoryName, difficulty, poolKey: `${categoryName}-${difficulty}` };
+}
+
+function getQuestionRef(question, cellKey) {
+  const info = getPoolKeyFromCell(cellKey);
+  if (!info) return null;
+  const pool = questionPools[info.categoryName]?.[info.difficulty] || [];
+  const index = pool.findIndex(q =>
+    q === question ||
+    (
+      q.pregunta === question?.pregunta &&
+      q.audio === question?.audio &&
+      q.explicacion === question?.explicacion &&
+      q.trackName === question?.trackName
+    )
+  );
+  return index === -1 ? null : { ...info, index };
+}
+
+function rebuildUsedQuestionsByPool() {
+  usedQuestionsByPool = {};
+  Object.entries(assignedQuestions).forEach(([cellKey, question]) => {
+    const info = getPoolKeyFromCell(cellKey);
+    if (!info || !question) return;
+    if (!usedQuestionsByPool[info.poolKey]) usedQuestionsByPool[info.poolKey] = new Set();
+    usedQuestionsByPool[info.poolKey].add(question);
+  });
+}
+
+function getUsedComodinesState() {
+  return teamScores.map((_, teamIndex) => ({
+    verde: Boolean(document.querySelector(`#team-${teamIndex} .comodin.verde`)?.classList.contains('used')),
+    rojo: Boolean(document.querySelector(`#team-${teamIndex} .comodin.rojo`)?.classList.contains('used')),
+    morado: Boolean(document.querySelector(`#team-${teamIndex} .comodin.morado`)?.classList.contains('used'))
+  }));
+}
+
+function applyUsedComodinesState(usedComodines = []) {
+  usedComodines.forEach((state, teamIndex) => {
+    ['verde', 'rojo', 'morado'].forEach(color => {
+      const el = document.querySelector(`#team-${teamIndex} .comodin.${color}`);
+      if (el) el.classList.toggle('used', Boolean(state?.[color]));
+    });
+  });
+}
+
+function saveGameState() {
+  if (!isIndexGamePage()) return;
+
+  const assignedQuestionRefs = {};
+  Object.entries(assignedQuestions).forEach(([cellKey, question]) => {
+    const ref = getQuestionRef(question, cellKey);
+    if (ref) assignedQuestionRefs[cellKey] = ref;
+  });
+
+  sessionStorage.setItem(GAME_STATE_KEY, JSON.stringify({
+    teamScores: [...teamScores],
+    teamNames: [...teamNames],
+    assignedQuestionRefs,
+    revealedAudioCells: [...revealedAudioCells],
+    cellStates,
+    audioPositions,
+    categoryStats,
+    scoreHistory,
+    lastPlayedCategory,
+    lastQuestionResolved,
+    usedComodines: getUsedComodinesState()
+  }));
+}
+
+function restoreGameState() {
+  if (!isIndexGamePage()) return;
+
+  const raw = sessionStorage.getItem(GAME_STATE_KEY);
+  if (!raw) return;
+
+  let state;
+  try {
+    state = JSON.parse(raw);
+  } catch {
+    sessionStorage.removeItem(GAME_STATE_KEY);
+    return;
+  }
+
+  if (Array.isArray(state.teamScores)) {
+    state.teamScores.forEach((score, index) => {
+      if (index < teamScores.length) teamScores[index] = Number(score) || 0;
+    });
+  }
+
+  if (Array.isArray(state.teamNames)) {
+    state.teamNames.forEach((name, index) => {
+      if (index < teamNames.length && name) teamNames[index] = name;
+    });
+  }
+
+  const savedTeams = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
+  for (let i = 0; i < teamNames.length; i++) {
+    if (savedTeams[i]) teamNames[i] = savedTeams[i];
+  }
+
+  Object.keys(assignedQuestions).forEach(key => delete assignedQuestions[key]);
+  Object.entries(state.assignedQuestionRefs || {}).forEach(([cellKey, ref]) => {
+    const question = questionPools[ref.categoryName]?.[ref.difficulty]?.[ref.index];
+    if (question) assignedQuestions[cellKey] = question;
+  });
+
+  revealedAudioCells.clear();
+  (state.revealedAudioCells || []).forEach(cellKey => revealedAudioCells.add(cellKey));
+
+  cellStates = state.cellStates || {};
+  audioPositions = state.audioPositions || {};
+  categoryStats = state.categoryStats || {};
+  scoreHistory = Array.isArray(state.scoreHistory) && state.scoreHistory.length ? state.scoreHistory : [[0, 0, 0, 0, 0]];
+  lastPlayedCategory = state.lastPlayedCategory || null;
+  lastQuestionResolved = Boolean(state.lastQuestionResolved);
+
+  rebuildUsedQuestionsByPool();
+
+  for (let i = 0; i < teamScores.length; i++) {
+    renderScore(i);
+    const nameEl = document.getElementById(`team-name-${i}`);
+    if (nameEl) nameEl.textContent = teamNames[i];
+  }
+
+  Object.keys(assignedQuestions).forEach(cellKey => {
+    const btn = document.getElementById(`btn-${cellKey}`);
+    if (!btn) return;
+    const isResolved = Boolean(cellStates[cellKey]?.explanationVisible || revealedAudioCells.has(cellKey));
+    btn.classList.toggle('disabled', isResolved);
+    if (isResolved) {
+      btn.setAttribute('aria-disabled', 'true');
+      btn.onclick = null;
+    } else {
+      const [row, col] = cellKey.split('-').map(Number);
+      btn.removeAttribute('aria-disabled');
+      btn.onclick = () => {
+        if (btn.classList.contains('disabled')) return;
+        openQuestion(row, col, btn);
+      };
+    }
+  });
+
+  applyUsedComodinesState(state.usedComodines);
+  applyTeamNeonBorders();
+}
+
 // ==================== QUESTION LOGIC ====================
 function openQuestion(row, col, btnElement) {
   if (!questionText || !optionsDiv || !resolveBtn || !audioControlsWrap || !progressWrap) return;
@@ -738,6 +971,7 @@ function openQuestion(row, col, btnElement) {
 
     usedSet.add(q);
     assignedQuestions[cellKey] = q;
+    saveGameState();
   }
 
   currentQuestion = q;
@@ -921,13 +1155,17 @@ function resolveQuestion() {
     if (currentButton) {
       currentButton.classList.remove('disabled');
       currentButton.setAttribute('aria-disabled', 'false');
-      currentButton.onclick = () => openQuestion(currentRow, currentCol, currentButton);
+      currentButton.onclick = () => {
+        if (currentButton.classList.contains('disabled')) return;
+        openQuestion(currentRow, currentCol, currentButton);
+      };
     }
 
     const resolveBtnText = document.getElementById('resolveBtnText');
     if (resolveBtnText) resolveBtnText.textContent = 'Resolver';
     const resolveIcon = resolveBtn.querySelector('i');
     if (resolveIcon) { resolveIcon.classList.replace('bi-lock-fill', 'bi-unlock-fill'); }
+    saveGameState();
     return;
   }
 
@@ -968,6 +1206,7 @@ function resolveQuestion() {
   cellStates[cellKey].explanationVisible = true;
   cellStates[cellKey].selectedOption = selectedOption;
   lastQuestionResolved = true;
+  saveGameState();
 }
 
 // ==================== CAMBIAR PREGUNTA ====================
@@ -993,7 +1232,10 @@ function changeCurrentQuestion() {
   if (currentButton) {
     currentButton.classList.remove('disabled');
     currentButton.removeAttribute('aria-disabled');
-    currentButton.onclick = () => openQuestion(currentRow, currentCol, currentButton);
+    currentButton.onclick = () => {
+      if (currentButton.classList.contains('disabled')) return;
+      openQuestion(currentRow, currentCol, currentButton);
+    };
   }
 
   // 4. Limpiamos la interfaz actual completamente
@@ -1012,6 +1254,7 @@ function changeCurrentQuestion() {
 
   // 5. Forzamos que se cargue una pregunta NUEVA y limpia
   openQuestion(currentRow, currentCol, currentButton);
+  saveGameState();
 }
 
 function closeOverlay() {
@@ -1061,6 +1304,7 @@ function closeOverlay() {
   if (hintText) hintText.innerHTML = '';
 
   audioControlsWrap.classList.remove('audio-question');
+  saveGameState();
 }
 
 function showFinalRanking() {
@@ -1271,6 +1515,7 @@ function showFinalRanking() {
   finalOverlay.style.display = 'flex';
   finalOverlay.setAttribute('aria-hidden', 'false');
   setTimeout(() => { startConfetti(); }, 200);
+  saveGameState();
 }
 
 function closeFinalOverlay() {
@@ -1290,7 +1535,10 @@ function resetBoardAndScores() {
     if (parts.length === 3) {
       const r = parseInt(parts[1], 10);
       const c = parseInt(parts[2], 10);
-      b.onclick = () => openQuestion(r, c, b);
+      b.onclick = () => {
+        if (b.classList.contains('disabled')) return;
+        openQuestion(r, c, b);
+      };
     }
   });
 
@@ -1310,6 +1558,7 @@ function resetBoardAndScores() {
   lastQuestionResolved = false;
   scoreHistory = [[0, 0, 0, 0, 0]];
   if (finalChart) { finalChart.destroy(); finalChart = null; }
+  clearSavedGame();
 
 }
 
@@ -1427,10 +1676,22 @@ IDEAS NO USADAS:
 // Ruletas lives in js/ruletas.js. script.js keeps shared helpers and Family Trivia only.
 
 document.addEventListener('DOMContentLoaded', () => {
+  clearSavedGameOnReload();
   normalizeScoreButtons();
   highlightActiveButton();
   buildBoard();
+  restoreGameState();
   initIndexPage();
+  const rulesModal = document.getElementById('rulesModal');
+  if (rulesModal) {
+    rulesModal.addEventListener('click', (e) => {
+      if (e.target === rulesModal) closeRulesModal();
+    });
+    rulesModal.querySelector('.btn-close')?.addEventListener('click', closeRulesModal);
+  }
+  document.querySelectorAll('.comodin').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(saveGameState, 0));
+  });
 });
 
 
@@ -1473,6 +1734,7 @@ function startRename(teamIndex) {
     newEl.textContent = newName;
     input.replaceWith(newEl);
     teamNames[teamIndex] = newName;
+    saveGameState();
   };
 
   input.addEventListener('blur', finish);
@@ -1494,3 +1756,7 @@ window.closeFinalOverlay = closeFinalOverlay;
 window.toggleFinalStats = toggleFinalStats;
 window.startRename = startRename;
 window.toggleEditMode = toggleEditMode;
+window.openRulesModal = openRulesModal;
+window.closeRulesModal = closeRulesModal;
+window.goToGamePanel = goToGamePanel;
+window.goToPortfolio = goToPortfolio;

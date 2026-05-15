@@ -60,8 +60,8 @@
   margin-left: -10px;
   margin-right: -10px;
   border-top: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.25);
-  padding: 14px 24px;
+  background: rgba(0,0,0,0.18);
+  padding: 12px 20px;
 }
 .footer-inner {
   display: flex;
@@ -72,20 +72,43 @@
   font-size: 0.78rem;
   color: var(--muted);
 }
-.footer-brand {
-  font-family: 'Russo One', sans-serif;
-  font-size: 0.82rem;
+.footer-logo {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: inline-block;
+  background: var(--accent);
+  -webkit-mask-image: url("../img/AJ.png");
+  mask-image: url("../img/AJ.png");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-source-type: luminance;
+  mask-type: luminance;
+}
+.footer-link {
   color: var(--accent);
-  letter-spacing: 0.04em;
-  display: flex;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+.footer-link:hover {
+  color: #fff;
+}
+.footer-link:hover .footer-logo {
+  background: #fff;
 }
 .footer-sep {
   opacity: 0.35;
 }
 .footer-copy {
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 /* ==================== NAV BAR ==================== */
@@ -109,18 +132,12 @@
   white-space: nowrap;
 }
 
-.nav-buttons {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
 .nav-bar {
   background: transparent;
   backdrop-filter: blur(10px);
   padding: 14px 22px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   gap: 10px;
   border-bottom: 3px solid var(--accent);
@@ -131,6 +148,49 @@
   box-sizing: border-box;
 }
 
+.nav-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.nav-brand-link:hover .nav-logo {
+  filter: brightness(1.25);
+}
+
+.nav-title-link {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.nav-title-logo {
+  width: min(42vw, 260px);
+  height: auto;
+  max-height: 54px;
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.22));
+  pointer-events: none;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.nav-title-link:hover .nav-title-logo {
+  filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.34));
+  transform: scale(1.03);
+}
+
 .nav-ruleta-icon {
   width: 20px;
   height: 20px;
@@ -139,6 +199,170 @@
   display: block;
 }
 
+.nav-brand-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: block;
+  box-sizing: border-box;
+  background: linear-gradient(90deg, #facc15, #f97316);
+  -webkit-mask-image: url("../img/AJ.png");
+  mask-image: url("../img/AJ.png");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-source-type: luminance;
+  mask-type: luminance;
+}
+
+.rules-nav-btn {
+  position: absolute;
+  right: clamp(190px, 20vw, 260px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff7cc;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.16);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  z-index: 2;
+}
+
+.rules-nav-btn:hover {
+  transform: translateY(-50%) scale(1.04);
+  background: transparent;
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.28);
+}
+
+.rules-nav-btn i {
+  font-size: 1.05rem;
+}
+
+.rules-modal .modal-content {
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.12), transparent 30%),
+    #1f1f1f;
+  color: #f8fafc;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 24px;
+  box-shadow: 0 28px 100px rgba(0, 0, 0, 0.8), 0 0 40px rgba(250, 204, 21, 0.12);
+  overflow: hidden;
+}
+
+.rules-modal .modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 22px 26px;
+}
+
+.rules-modal .modal-title {
+  font-size: 1.65rem;
+  font-weight: 900;
+  margin: 0;
+}
+
+.rules-kicker {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.rules-modal .modal-body {
+  padding: 24px 26px 28px;
+}
+
+.rules-section {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rules-section:first-child {
+  padding-top: 0;
+}
+
+.rules-section:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.rules-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  margin: 0 0 10px;
+}
+
+.rules-section h3 i {
+  color: var(--accent);
+}
+
+.rules-section p,
+.rules-section li {
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.rules-section p {
+  margin: 0 0 8px;
+}
+
+.rules-section ul {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.rules-jokers {
+  list-style: none;
+  padding-left: 0 !important;
+}
+
+.rules-jokers li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.joker-dot {
+  width: 14px;
+  height: 14px;
+  margin-top: 5px;
+  border-radius: 50%;
+  flex: 0 0 14px;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.joker-green {
+  background: #22c55e;
+  color: #22c55e;
+}
+
+.joker-red {
+  background: #ef4444;
+  color: #ef4444;
+}
+
+.joker-purple {
+  background: #a855f7;
+  color: #a855f7;
+}
 
 .nav-btn {
   padding: 12px 28px;
@@ -1713,12 +1937,78 @@ h1 {
     width: 16px;
     height: 16px;
   }
+  .nav-brand-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .nav-logo {
+    font-size: 1.45rem;
+  }
+  .nav-title-logo {
+    width: min(38vw, 190px);
+    max-height: 42px;
+  }
+  .rules-nav-btn {
+    right: 14px;
+    padding: 8px 13px;
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 768px) {
+  body {
+    padding: 0 6px;
+  }
   .nav-bar {
-    padding: 12px 8px;
-    gap: 6px;
+    padding: 10px 8px;
+    min-height: 58px;
+    gap: 4px;
+  }
+  .nav-brand-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .nav-logo {
+    font-size: 1rem;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .nav-title-logo {
+    width: min(38vw, 138px);
+    max-height: 32px;
+  }
+  .rules-nav-btn {
+    right: 8px;
+    padding: 7px 9px;
+    min-width: 36px;
+  }
+  .rules-nav-btn span {
+    display: none;
+  }
+  .game-container {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    gap: 10px;
+  }
+  .game-container > .d-flex {
+    flex-wrap: wrap;
+  }
+  .edit-teams-btn,
+  .reset-btn,
+  .finalize-btn {
+    font-size: 0.82rem;
+    padding: 9px 12px;
+  }
+  .board-scroll {
+    padding: 6px 0;
+  }
+  .board {
+    min-width: 0;
+    width: 100%;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 5px;
   }
   .nav-btn {
     padding: 8px 12px;
@@ -1771,37 +2061,73 @@ h1 {
     font-size: 22px;
   }
   .category {
-    padding: 8px 4px;
+    padding: 6px 2px;
+    font-size: clamp(8px, 2.5vw, 12px);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    word-break: break-word;
   }
   .value {
-    font-size: 16px;
-    padding: 10px 6px;
+    font-size: clamp(12px, 3.8vw, 16px);
+    padding: 8px 2px;
+    border-width: 2px;
+    border-radius: 8px;
+  }
+  .scoreboard {
+    padding: 7px;
+    overflow: visible;
+  }
+  #teamsContainer {
+    --bs-gutter-x: 0.45rem;
+    --bs-gutter-y: 0.55rem;
   }
   .team {
-    padding: 6px;
+    padding: 5px;
+  }
+  .team-score-header {
+    font-size: 17px;
+    padding: 5px 4px 4px;
+    border-width: 2px;
   }
   .team-name {
-    font-size: 14px;
-    margin-bottom: 4px;
+    font-size: clamp(11px, 3.2vw, 14px);
+    margin-bottom: 3px;
+    line-height: 1.15;
   }
   .team-score {
     font-size: 18px;
     margin-bottom: 4px;
   }
   .btn-small {
-    padding: 4px 6px;
-    font-size: 11px;
-    min-width: 44px;
+    padding: 4px 3px;
+    font-size: clamp(10px, 2.8vw, 11px);
+    min-width: 0;
+    flex: 1 1 0;
+    height: 30px;
   }
   .btn-small.reset {
-    min-width: 36px;
+    min-width: 0;
+    width: 100%;
+    height: 30px;
     padding: 4px 4px;
   }
   .score-buttons {
-    gap: 4px;
+    gap: 3px;
+    width: 100%;
   }
   .row-buttons {
-    gap: 4px;
+    gap: 3px;
+    width: 100%;
+    height: 30px;
+  }
+  .comodines {
+    gap: 5px;
+    margin-bottom: 6px;
+  }
+  .comodin {
+    width: 27px;
+    height: 27px;
+    font-size: 13px;
   }
   .wheel-card {
     padding: 12px;
@@ -1837,12 +2163,86 @@ h1 {
 
 @media (max-width: 480px) {
   .nav-bar {
-    padding: 10px 6px;
-    gap: 4px;
+    padding: 9px 6px;
+  }
+  .nav-brand-link {
+    gap: 5px;
+  }
+  .nav-brand-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .nav-logo {
+    font-size: 0.82rem;
+    max-width: 58px;
+  }
+  .nav-title-logo {
+    width: min(35vw, 118px);
+    max-height: 28px;
+  }
+  .rules-nav-btn {
+    right: 6px;
+    padding: 6px 8px;
   }
   .nav-btn {
     padding: 7px 10px;
     font-size: 11px;
+  }
+  .intro-box {
+    margin: 34px auto 48px;
+    padding: 28px 16px;
+  }
+  .intro-trivia-img {
+    width: 125px;
+  }
+  .intro-stats {
+    gap: 22px;
+  }
+  .intro-btn-row {
+    gap: 10px;
+  }
+  .btn-salas-primary,
+  .btn-intro-secondary {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+  }
+  .team-score-header {
+    font-size: 15px;
+  }
+  .team {
+    padding: 4px;
+  }
+  .btn-small {
+    font-size: 9.5px;
+    height: 28px;
+  }
+  .row-buttons,
+  .btn-small.reset {
+    height: 28px;
+  }
+  .comodin {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav-logo {
+    display: none;
+  }
+  .nav-title-logo {
+    width: min(42vw, 126px);
+  }
+  .rules-nav-btn {
+    min-width: 32px;
+    padding: 6px 7px;
+  }
+  #teamsContainer {
+    --bs-gutter-x: 0.35rem;
+    --bs-gutter-y: 0.45rem;
   }
 }
 

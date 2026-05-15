@@ -3,9 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
   footer.className = 'page-footer';
   footer.innerHTML = `
     <div class="footer-inner">
-      <span class="footer-brand"><i class="bi bi-controller"></i> AJ Games</span>
+      <span class="footer-copy">Family Trivia © 2026</span>
       <span class="footer-sep">·</span>
-      <span class="footer-copy">© 2026 Aleix Auqué</span>
+      <a class="footer-link" href="https://aleixaj.com/" target="_blank" rel="noopener">
+        <span class="footer-logo" aria-hidden="true"></span>
+        <span>Aleix Auqué</span>
+      </a>
     </div>
   `;
   document.body.appendChild(footer);

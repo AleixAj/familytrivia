@@ -153,6 +153,25 @@ Funcionamiento:
 
 Los equipos formados se guardan temporalmente para pasar al tablero principal. Al recargar la pagina se limpian los equipos guardados.
 
+## Interfaz
+
+- El boton `Reglas` de la navbar abre un modal con las normas completas durante la partida.
+- El logo `Family Trivia` de la navbar vuelve a la pagina principal.
+- El enlace `Aleix AJ` y el logo del footer llevan al portfolio del autor.
+- La interfaz esta adaptada para escritorio, tablet y movil, incluyendo tablero y panel de puntuaciones responsive.
+
+## Estado de partida
+
+Si el presentador entra en `Editar equipos` desde una partida en curso, el juego conserva el estado al volver:
+
+- Puntuaciones.
+- Casillas abiertas.
+- Preguntas asignadas.
+- Comodines usados.
+- Estadisticas acumuladas para el ranking final.
+
+Si se recarga la pagina con `F5`, se reinician la partida y los equipos guardados.
+
 ## Fin de partida
 
 La partida termina cuando se han abierto todas las puntuaciones del tablero. Entonces el presentador pulsa el boton de finalizar partida para mostrar los resultados.
@@ -221,3 +240,4 @@ Para cambiar categorias o valores del tablero, edita:
 - El proyecto es independiente y mantiene sus propios archivos `css/`, `js/`, `img/` y `audios/`.
 - Usa Bootstrap, Bootstrap Icons, Google Fonts y Chart.js desde CDN.
 - Esta pensado para uso local, reuniones familiares o despliegue estatico sencillo.
+- El footer incluye un enlace al portfolio de Aleix Auque usando el logo `AJ`.

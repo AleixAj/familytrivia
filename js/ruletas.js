@@ -304,10 +304,14 @@ function initRuletasPage() {
   const spinBothBtn = document.getElementById('spinBothBtn');
   const teamsListEl = document.getElementById('teamsList');
   const clearTeamsBtn = document.getElementById('clearTeamsBtn');
-  // sessionStorage persists across navigations but clears on page refresh
+  // sessionStorage persists across normal navigations, but F5 starts a clean setup.
   const _navType = (performance.getEntriesByType?.('navigation')?.[0]?.type)
     ?? (performance.navigation?.type === 1 ? 'reload' : 'navigate');
-  if (_navType === 'reload') sessionStorage.removeItem('ruletaTeams');
+  if (_navType === 'reload') {
+    sessionStorage.removeItem('ruletaTeams');
+    sessionStorage.removeItem('familyTriviaGameState');
+    localStorage.removeItem('ruletaTeamNames');
+  }
 
   let teams = JSON.parse(sessionStorage.getItem('ruletaTeams') || '[]');
 
