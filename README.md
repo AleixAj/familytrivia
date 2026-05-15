@@ -8,6 +8,54 @@
 
 Juego familiar de preguntas estilo tablero, pensado para jugar todos juntos en una casa, con un presentador dirigiendo la partida desde una tablet o pantalla visible para todos. Incluye ruletas para formar equipos equilibrados, preguntas por categorias, respuestas simultaneas, control manual de puntos y ranking final con estadisticas.
 
+## Capturas de pantalla
+
+Recorrido visual desde la pantalla de inicio hasta el ranking y las estadisticas finales.
+
+### Pantalla de inicio
+
+![Pantalla de inicio de Family Trivia](img/readme/01-inicio.png)
+
+### Ruletas para formar equipos
+
+![Dos ruletas y equipos formados](img/readme/02-ruletas.png)
+
+### Tablero principal
+
+![Tablero con categorias y valores de puntuacion](img/readme/03-tablero.png)
+
+### Pregunta tipo test
+
+![Modal de pregunta con opciones A, B, C y D](img/readme/04-pregunta.png)
+
+### Respuesta correcta resaltada
+
+![Opcion correcta resaltada tras resolver](img/readme/05-respuesta.png)
+
+### Pista y explicacion
+
+![Pista y texto explicativo tras revelar la respuesta](img/readme/06-pista-explicacion.png)
+
+### Pregunta de banda sonora (audio)
+
+![Reproductor de audio en una pregunta musical](img/readme/07-banda-sonora.png)
+
+### Respuesta de banda sonora
+
+![Pista, audio y pelicula revelada](img/readme/08-banda-sonora-respuesta.png)
+
+### Partida en curso
+
+![Tablero con casillas usadas y marcadores de equipos](img/readme/09-tablero-partida.png)
+
+### Fin de partida
+
+![Modal de ganador con ranking y confeti](img/readme/10-fin-partida.png)
+
+### Estadisticas finales
+
+![Grafico de evolucion y estadisticas por categoria](img/readme/11-estadisticas.png)
+
 ## Entradas del juego
 
 - `index.html`: tablero principal de Family Trivia.
