@@ -1,3 +1,9 @@
+// ============================================================
+// Family Trivia - Shared Footer and Button Decoration
+// Injects the portfolio footer and keeps animated button borders
+// aligned when responsive or hidden layouts change size.
+// ============================================================
+
 document.addEventListener('DOMContentLoaded', () => {
   const footer = document.createElement('footer');
   footer.className = 'page-footer';

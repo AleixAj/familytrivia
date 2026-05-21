@@ -1,5 +1,11 @@
 ﻿'use strict';
 
+// ============================================================
+// Family Trivia - Team Wheel Controller
+// Manages the two responsive canvas wheels used to create
+// balanced teams and passes those team names to the main board.
+// ============================================================
+
 function initRuletasPage() {
   const hasCanvasA = document.getElementById('canvasA');
   const hasCanvasB = document.getElementById('canvasB');
@@ -15,9 +21,9 @@ function initRuletasPage() {
     this.colors = [];
     this.rotation = 0;
     this.animationId = null;
-    this.size = Math.min(this.canvas.width, this.canvas.height) * 0.95;  // Slightly smaller for better fit on tablets
+    this.size = Math.min(this.canvas.width, this.canvas.height) * 0.95;  // Slightly smaller for better tablet fit.
     this.center = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
-    this.radius = Math.min(this.size / 2 - 8, 160);  // Cap radius, reduce margin for tablets
+    this.radius = Math.min(this.size / 2 - 8, 160);  // Cap radius and keep enough margin on tablets.
     this.font = 'bold 14px Poppins, sans-serif';
     this.isSpinning = false;
     this.init();
@@ -29,21 +35,21 @@ function initRuletasPage() {
     const logicalW = rect.width;
     const logicalH = rect.height;
     
-    // Physical canvas dimensions
+    // Physical canvas dimensions for high-DPI rendering.
     this.canvas.width = Math.round(logicalW * dpr);
     this.canvas.height = Math.round(logicalH * dpr);
     this.canvas.style.width = logicalW + 'px';
     this.canvas.style.height = logicalH + 'px';
     
-    // Physical center for drawing
+    // Physical center used by the drawing context.
     this.centerX = this.canvas.width / 2;
     this.centerY = this.canvas.height / 2;
     
-    // Logical dimensions for size calc
+    // Logical dimensions used for layout calculations.
     this.logicalW = logicalW;
     this.logicalH = logicalH;
     
-    // Update size/radius based on logical dimensions
+    // Update wheel size and radius from the rendered layout.
     this.size = Math.min(logicalW, logicalH) * 0.92;
     this.radius = Math.min(this.size / 2 - 12, 150);
   };
@@ -104,7 +110,7 @@ function initRuletasPage() {
   Wheel.prototype.draw = function() {
     if (!this.ctx) return;
     
-    // Always recalc dimensions before draw
+    // Always recalculate dimensions before drawing.
     this.updateDimensions();
     
     const ctx = this.ctx;
@@ -116,7 +122,7 @@ function initRuletasPage() {
     ctx.save();
     ctx.scale(dpr, dpr);
     
-    // Use logical center (pre-calculated physical / dpr)
+    // Use the logical center after scaling by device pixel ratio.
     const logicalCenterX = this.centerX / dpr;
     const logicalCenterY = this.centerY / dpr;
     ctx.translate(logicalCenterX, logicalCenterY);
@@ -286,10 +292,10 @@ function initRuletasPage() {
       c.style.height = available + 'px';
     });
     
-    // Update wheel dimensions (calls updateDimensions + draw internally)
+    // Update wheel dimensions; draw() recalculates canvas metrics internally.
     [wheelA, wheelB].forEach(w => {
       if (!w || !w.canvas) return;
-      w.draw();  // This now handles updateDimensions()
+      w.draw();  // draw() handles updateDimensions().
     });
   }
 
@@ -300,7 +306,7 @@ function initRuletasPage() {
   });
   window.addEventListener('resize', () => { resizeAllCanvases(); });
 
-  // ==================== SPIN BOTH WHEELS ====================
+  // ==================== TEAM PAIRING FLOW ====================
   const spinBothBtn = document.getElementById('spinBothBtn');
   const teamsListEl = document.getElementById('teamsList');
   const clearTeamsBtn = document.getElementById('clearTeamsBtn');
@@ -353,14 +359,14 @@ function initRuletasPage() {
     if (wheelA.names.length === 1 && wheelB.names.length === 1) {
       const lastA = wheelA.names[0];
       const lastB = wheelB.names[0];
-      const finalTeam = `${lastA} + ${lastB}`;
+      const finalTeam = `${lastA} y ${lastB}`;
       teams.push(finalTeam);
       syncTeams();
       renderTeams();
       showTeamPopup(teams.length, lastA, lastB);
       saveRuletaTeam(teams.length, lastA, lastB);
 
-      // Limpiamos las ruletas completamente
+      // Clear both wheels after the final automatic pairing.
       wheelA.clear();
       wheelB.clear();
       return true;
@@ -370,9 +376,16 @@ function initRuletasPage() {
 
   function saveRuletaTeam(teamNumber, nameA, nameB) {
     if (teamNumber > 5) return;
+    const displayName = `${nameA} y ${nameB}`;
     const saved = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
-    saved[teamNumber - 1] = `${nameA} y ${nameB}`;
+    saved[teamNumber - 1] = displayName;
     localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
+    const idx = teamNumber - 1;
+    if (idx < teams.length) {
+      teams[idx] = displayName;
+      syncTeams();
+      renderTeams();
+    }
   }
 
   let _teamPopupTimer = null;
@@ -413,10 +426,10 @@ function initRuletasPage() {
   function spinBothWheels() {
     if (wheelA.isSpinning || wheelB.isSpinning) return;
 
-    // Caso especial: ya solo queda 1 nombre en cada ruleta → emparejar directamente
+    // If one name remains in each wheel, pair them immediately.
     if (autoPairLastRemaining()) return;
 
-    // Caso normal: al menos 1 nombre en cada ruleta
+    // Standard case: both wheels need at least one available name.
     if (wheelA.names.length === 0 || wheelB.names.length === 0) {
       showToast('Ambas ruletas deben tener al menos un nombre.');
       return;
@@ -441,20 +454,20 @@ function initRuletasPage() {
 
     function checkBothDone() {
       if (winnerA !== null && winnerB !== null) {
-        const teamName = `${winnerA} + ${winnerB}`;
+        const teamName = `${winnerA} y ${winnerB}`;
         teams.push(teamName);
         syncTeams();
         renderTeams();
         showTeamPopup(teams.length, winnerA, winnerB);
         saveRuletaTeam(teams.length, winnerA, winnerB);
 
-        // Eliminar los ganadores de sus ruletas
+        // Remove selected players from their wheels.
         const idxA = wheelA.names.indexOf(winnerA);
         const idxB = wheelB.names.indexOf(winnerB);
         if (idxA !== -1) wheelA.removeNameAt(idxA);
         if (idxB !== -1) wheelB.removeNameAt(idxB);
 
-        // Comprobar si ahora quedan los últimos 2 (1 en cada ruleta)
+        // Auto-pair the final two players if each wheel has one name left.
         if (wheelA.names.length === 1 && wheelB.names.length === 1) {
           setTimeout(() => {
             autoPairLastRemaining();

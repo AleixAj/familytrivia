@@ -257,6 +257,7 @@ FamilyProject/
 ├── css/
 │   └── styles.css
 ├── js/
+│   ├── questions.js
 │   ├── script.js
 │   ├── ruletas.js
 │   └── footer.js
@@ -266,7 +267,7 @@ FamilyProject/
 
 ## Editar preguntas
 
-Las preguntas estan definidas en `js/script.js`, dentro de `questionPools`.
+Las preguntas estan definidas en `js/questions.js`, dentro de `questionPools`, para que sea mas facil modificarlas sin tocar la logica del juego.
 
 Cada pregunta puede incluir:
 
@@ -282,6 +283,8 @@ Para cambiar categorias o valores del tablero, edita:
 
 - `categories`: nombres de las categorias.
 - `values`: puntuaciones disponibles.
+
+El archivo `index.html` carga primero `js/questions.js` y despues `js/script.js`, asi que el orden de esos scripts es importante.
 
 ## Notas
 

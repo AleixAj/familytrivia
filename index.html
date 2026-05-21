@@ -70,7 +70,7 @@
       <div class="scoreboard" id="scoreboard">
         <div class="row g-3" id="teamsContainer">
 
-          <!-- Equipo 0 -->
+          <!-- Team 0 -->
           <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-0">0 Pts</div>
@@ -117,7 +117,7 @@
             </div><!-- /flex wrapper 0 -->
           </div>
 
-          <!-- Equipo 1 -->
+          <!-- Team 1 -->
           <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-1">0 Pts</div>
@@ -164,7 +164,7 @@
             </div><!-- /flex wrapper 1 -->
           </div>
 
-          <!-- Equipo 2 -->
+          <!-- Team 2 -->
           <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-2">0 Pts</div>
@@ -211,7 +211,7 @@
             </div><!-- /flex wrapper 2 -->
           </div>
 
-          <!-- Equipo 3 -->
+          <!-- Team 3 -->
           <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-3">0 Pts</div>
@@ -258,7 +258,7 @@
             </div><!-- /flex wrapper 3 -->
           </div>
 
-          <!-- Equipo 4 -->
+          <!-- Team 4 -->
           <div class="col-6 col-sm-4 col-md-4 col-lg">
             <div class="d-flex flex-column h-100">
             <div class="team-score-header" id="score-top-4">0 Pts</div>
@@ -322,7 +322,7 @@
 
     </div>
 
-    <!-- Overlay pregunta -->
+    <!-- Question overlay -->
     <div id="overlay">
       <div class="question-box" role="dialog" aria-modal="true">
         <div class="question-header">
@@ -344,6 +344,7 @@
           </div>
         </div>
         <h2 id="questionText">Pregunta aquí</h2>
+        <div id="questionStatus" class="question-status" role="status" aria-live="polite"></div>
         <div id="options"></div>
         <div id="hintContainer" class="hint-container" aria-hidden="true">
           <strong>💡 Pista:</strong>
@@ -352,7 +353,7 @@
 
         <div id="explanation" class="hidden-answer" aria-hidden="true"></div>
 
-        <!-- Audio controls (Bandas sonoras / Disney) -->
+        <!-- Audio controls (Soundtracks / Disney) -->
         <div id="audioControls">
           <!-- Volume -->
           <div class="volume-control">
@@ -501,6 +502,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmwz+ysmXdQS32vBX8sMMd1bGvu7u" crossorigin="anonymous"></script>
+    <script src="js/questions.js"></script>
     <script src="js/script.js"></script>
     <script src="js/footer.js"></script>
   </body>
