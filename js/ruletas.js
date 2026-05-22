@@ -103,6 +103,7 @@ function initRuletasPage() {
       btn.title = 'Eliminar';
       btn.onclick = () => { this.removeNameAt(i); };
       div.appendChild(btn);
+      div.classList.add('name-item-enter');
       this.listEl.appendChild(div);
     });
   };
@@ -216,7 +217,12 @@ function initRuletasPage() {
         const normalized = ((-Math.PI/2 - self.rotation) % (Math.PI*2) + (Math.PI*2)) % (Math.PI*2);
         const winnerIndex = Math.floor(normalized / anglePer) % n;
         const winner = self.names[winnerIndex];
-        if (self.winnerDisplayEl) self.winnerDisplayEl.innerText = winner || '—';
+        if (self.winnerDisplayEl) {
+          self.winnerDisplayEl.innerText = winner || '—';
+          self.winnerDisplayEl.classList.remove('winner-pulse');
+          void self.winnerDisplayEl.offsetWidth;
+          self.winnerDisplayEl.classList.add('winner-pulse');
+        }
         if (typeof onComplete === 'function') onComplete(winnerIndex, winner);
       }
     }
@@ -341,6 +347,8 @@ function initRuletasPage() {
       const color = teamColor(teamNum);
       const colorName = teamColorName(teamNum);
       const div = document.createElement('div');
+      div.className = 'formed-team-enter';
+      div.style.animationDelay = `${Math.min(i, 8) * 55}ms`;
       div.style.cssText = 'display:flex;align-items:center;gap:10px;padding:4px 0';
       div.innerHTML = `
         <span style="background:${color};color:${teamNum === 4 ? '#000' : '#fff'};font-weight:700;padding:2px 10px;border-radius:99px;font-size:13px;white-space:nowrap;text-transform:capitalize;">Equipo ${colorName}</span>

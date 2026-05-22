@@ -75,8 +75,15 @@ function closeRulesModal() {
 }
 
 function startTrivia() {
-  document.getElementById('triviaIntro')?.classList.add('d-none');
-  document.getElementById('gameContainer')?.classList.remove('d-none');
+  const intro = document.getElementById('triviaIntro');
+  const game = document.getElementById('gameContainer');
+  if (intro) intro.classList.add('intro-exiting');
+  setTimeout(() => {
+    intro?.classList.add('d-none');
+    game?.classList.remove('d-none');
+    game?.classList.add('game-entering');
+    setTimeout(() => game?.classList.remove('game-entering'), 650);
+  }, 220);
   restoreGameState();
 }
 
@@ -302,6 +309,21 @@ function renderScore(teamIndex) {
   if (top) top.innerText = text;
 }
 
+function animateScoreChange(teamIndex, delta) {
+  const targets = [
+    document.getElementById(`score-${teamIndex}`),
+    document.getElementById(`score-top-${teamIndex}`)
+  ].filter(Boolean);
+  const cls = delta >= 0 ? 'score-flash-up' : 'score-flash-down';
+
+  targets.forEach(el => {
+    el.classList.remove('score-flash-up', 'score-flash-down');
+    void el.offsetWidth;
+    el.classList.add(cls);
+    el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
+  });
+}
+
 function applyTeamNeonBorders() {
   for (let i = 0; i < teamScores.length; i++) {
     const teamEl = document.getElementById(`team-${i}`);
@@ -342,6 +364,7 @@ function adjustScore(teamIndex, delta) {
   if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex > 4) return;
   teamScores[teamIndex] += delta;
   renderScore(teamIndex);
+  animateScoreChange(teamIndex, delta);
   if (lastPlayedCategory && lastQuestionResolved) {
     if (!categoryStats[lastPlayedCategory]) categoryStats[lastPlayedCategory] = {};
     categoryStats[lastPlayedCategory][teamIndex] = (categoryStats[lastPlayedCategory][teamIndex] || 0) + delta;
@@ -524,17 +547,37 @@ function initIndexPage() {
     });
   }
 
-  // Seek by clicking the progress bar
+  // Seek by clicking or dragging the progress bar.
   if (progressBar) {
-    progressBar.addEventListener('click', function(e) {
+    const seekToPointer = (e) => {
       if (!audio || !audio.duration || isNaN(audio.duration) || !isFinite(audio.duration)) return;
 
       const rect = progressBar.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      const clickX = clientX - rect.left;
       const percentage = Math.max(0, Math.min(1, clickX / rect.width));
 
       audio.currentTime = percentage * audio.duration;
       updateProgressUI();
+    };
+
+    progressBar.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      seekToPointer(e);
+      progressBar.setPointerCapture?.(e.pointerId);
+
+      const onMove = (moveEvent) => seekToPointer(moveEvent);
+      const onUp = (upEvent) => {
+        seekToPointer(upEvent);
+        progressBar.releasePointerCapture?.(upEvent.pointerId);
+        progressBar.removeEventListener('pointermove', onMove);
+        progressBar.removeEventListener('pointerup', onUp);
+        progressBar.removeEventListener('pointercancel', onUp);
+      };
+
+      progressBar.addEventListener('pointermove', onMove);
+      progressBar.addEventListener('pointerup', onUp);
+      progressBar.addEventListener('pointercancel', onUp);
     });
   }
 
@@ -790,7 +833,7 @@ function openQuestion(row, col, btnElement) {
         audio.pause();
         audio.src = '';
       }
-      document.getElementById('overlay').style.display = 'flex';
+      showQuestionOverlay();
       return;
     }
 
@@ -981,7 +1024,15 @@ function openQuestion(row, col, btnElement) {
     }
   }
 
-  document.getElementById('overlay').style.display = 'flex';
+  showQuestionOverlay();
+}
+
+function showQuestionOverlay() {
+  const overlay = document.getElementById('overlay');
+  if (!overlay) return;
+  overlay.classList.remove('overlay-closing');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('overlay-open'));
 }
 
 function resolveQuestion() {
@@ -1016,6 +1067,8 @@ function resolveQuestion() {
   // Show the explanation and mark correct/incorrect options.
   if (currentButton) {
     currentButton.classList.add('disabled');
+    currentButton.classList.add('cell-used-pop');
+    currentButton.addEventListener('animationend', () => currentButton?.classList.remove('cell-used-pop'), { once: true });
     currentButton.setAttribute('aria-disabled', 'true');
   }
 
@@ -1136,7 +1189,14 @@ function closeOverlay() {
   }
 
   const overlay = document.getElementById('overlay');
-  if (overlay) overlay.style.display = 'none';
+  if (overlay) {
+    overlay.classList.remove('overlay-open');
+    overlay.classList.add('overlay-closing');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      overlay.classList.remove('overlay-closing');
+    }, 220);
+  }
 
   if (hintContainer) hintContainer.classList.remove('show');
   if (hintBtn) hintBtn.classList.remove('active');
@@ -1162,7 +1222,7 @@ function showFinalRanking() {
   winnerColorEl.style.background = winner.color;
   winnerColorEl.style.boxShadow = `0 0 40px ${hexToRgba(winner.color, 0.7)}, 0 0 80px ${hexToRgba(winner.color, 0.4)}, 0 10px 40px rgba(0,0,0,0.6)`;
   winnerAnnouncementEl.innerText = `🏆 ¡${winner.name.toUpperCase()} GANA LA PARTIDA! 🏆`;
-  winnerScoreEl.innerText = `${winner.score} Pts`;
+  winnerScoreEl.innerText = `0 Pts`;
   finalCard.style.borderColor = winner.color;
   finalCard.style.boxShadow = `0 28px 100px rgba(0,0,0,0.85), 0 0 40px ${hexToRgba(winner.color, 0.18)}`;
 
@@ -1177,6 +1237,7 @@ function showFinalRanking() {
   teams.forEach((t, idx) => {
     const div = document.createElement('div');
     div.className = 'rank-item';
+    div.style.animationDelay = `${idx * 85}ms`;
     div.innerHTML = `<div class="rank-item-content"><div class="rank-item-icon" style="background:${t.color}"></div><div class="rank-name">${idx+1}. ${escapeHtml(t.name)}</div></div><div class="rank-score">${t.score} Pts</div>`;
     rankingListEl.appendChild(div);
   });
@@ -1353,12 +1414,34 @@ function showFinalRanking() {
 
   finalOverlay.style.display = 'flex';
   finalOverlay.setAttribute('aria-hidden', 'false');
+  finalOverlay.classList.remove('final-overlay-open');
+  requestAnimationFrame(() => finalOverlay.classList.add('final-overlay-open'));
+  countUpWinnerScore(winner.score);
   setTimeout(() => { startConfetti(); }, 200);
   saveGameState();
 }
 
+function countUpWinnerScore(targetScore) {
+  if (!winnerScoreEl) return;
+  const duration = 900;
+  const start = performance.now();
+  const startValue = 0;
+  const diff = targetScore - startValue;
+
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const value = Math.round(startValue + diff * eased);
+    winnerScoreEl.innerText = `${value} Pts`;
+    if (t < 1) requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+}
+
 function closeFinalOverlay() {
   if (!finalOverlay) return;
+  finalOverlay.classList.remove('final-overlay-open');
   finalOverlay.style.display = 'none';
   finalOverlay.setAttribute('aria-hidden','true');
   stopConfetti();
