@@ -169,6 +169,7 @@ Las categorias `Bandas sonoras` y `Disney` pueden incluir audios.
 En estas preguntas:
 
 - Se puede reproducir, pausar y mover la pista de audio.
+- La barra de progreso del reproductor admite tanto **clic** para saltar a un punto como **arrastre** con raton o dedo (compatible con dispositivos tactiles gracias a `pointer events` y `touch-action: none`).
 - Los equipos escriben el nombre de la pelicula, serie o cancion que creen reconocer.
 - El boton de revelar muestra la solucion cuando el presentador lo decida.
 
@@ -201,8 +202,11 @@ Los equipos formados se guardan temporalmente para pasar al tablero principal. A
 
 - El boton `Reglas` de la navbar abre un modal con las normas completas durante la partida.
 - El logo `Family Trivia` de la navbar vuelve a la pagina principal.
-- El enlace `Aleix AJ` y el logo del footer llevan al portfolio del autor.
+- El enlace `Aleix AJ` y el logo del footer llevan al portfolio del autor. Se muestran con el gradiente azul cian del portfolio (`#a5f3fc -> #22d3ee -> #0891b2`), igual que el logo de la navbar, para reforzar la identidad de marca.
 - La interfaz esta adaptada para escritorio, tablet y movil, incluyendo tablero y panel de puntuaciones responsive.
+- Animaciones cuidadas en momentos clave: apertura y cierre de pregunta, opciones que entran escalonadas, feedback de respuesta (acierto / fallo), sello en casillas usadas, pulso del marcador al sumar o restar puntos y entrada animada del ranking final con `count-up` del ganador.
+- Las ruletas tambien tienen feedback animado: cada nombre nuevo entra con una pequena animacion, el ganador hace un pulso al revelarse y los equipos formados se anaden con una transicion clara.
+- Toda la capa de animaciones respeta `prefers-reduced-motion`, asi que se desactivan automaticamente si el sistema operativo lo pide.
 
 ## Estado de partida
 
@@ -287,4 +291,5 @@ El archivo `index.html` carga primero `js/questions.js` y despues `js/script.js`
 - El proyecto es independiente y mantiene sus propios archivos `css/`, `js/`, `img/` y `audios/`.
 - Usa Bootstrap, Bootstrap Icons, Google Fonts y Chart.js desde CDN.
 - Esta pensado para uso local, reuniones familiares o despliegue estatico sencillo.
-- El footer incluye un enlace al portfolio de Aleix Auque usando el logo `AJ`.
+- El footer incluye un enlace al portfolio de Aleix Auque usando el logo `AJ` con el gradiente azul cian del portfolio.
+- Las animaciones se desactivan automaticamente para usuarios con `prefers-reduced-motion: reduce`, mejorando la accesibilidad sin perder el efecto visual para el resto.
