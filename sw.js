@@ -6,7 +6,7 @@
 // ============================================================
 
 // Bump this version when publishing changes so every device drops the old copy.
-const CACHE = 'family-trivia-v1';
+const CACHE = 'family-trivia-v2';
 
 const PRECACHE = [
   './',
@@ -56,21 +56,28 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.includes('/audios/')) return;   // streamed straight from the network
 
-  // Pages: try the network first so updates arrive, fall back to the cache offline.
-  if (request.mode === 'navigate' || request.destination === 'document') {
+  const isPage = request.mode === 'navigate' || request.destination === 'document';
+  // The game's own code changes with every deploy. Serving it from the cache
+  // while the page comes from the network mixes versions (new HTML with old CSS),
+  // so ask the network first and keep the cache only as an offline fallback.
+  const isOwnCode = /\/(css|js)\//.test(url.pathname);
+
+  if (isPage || isOwnCode) {
     event.respondWith(
       fetch(request)
         .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE).then(cache => cache.put(request, copy));
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then(cache => cache.put(request, copy));
+          }
           return response;
         })
-        .catch(() => caches.match(request).then(hit => hit || caches.match('index.html')))
+        .catch(() => caches.match(request).then(hit => hit || (isPage ? caches.match('index.html') : undefined)))
     );
     return;
   }
 
-  // Everything else: serve from cache and refresh it in the background.
+  // Libraries, fonts and images barely change: cache first, refreshed in the background.
   event.respondWith(
     caches.match(request).then(hit => {
       const network = fetch(request)
