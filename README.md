@@ -164,7 +164,7 @@ Regla general:
 Hay dos formas de repartir puntos:
 
 - **Pantalla de reparto** (se abre al cerrar la pregunta): muestra arriba la respuesta correcta, con su letra y su texto, y debajo una fila por equipo con un boton grande de acierto y otro de fallo, pensados para pulsar en tablet. Al marcarlos se aplica automaticamente el valor de la casilla, la mitad en negativo si falla, y nada si es una adivinanza. Volver a pulsar la misma marca la quita y devuelve los puntos, y cambiar de acierto a fallo recalcula la diferencia sin acumular. `Ver la pregunta` vuelve al enunciado y `Listo` cierra la ronda y pasa el turno.
-- **Botones de cada tarjeta**: suma o resta manual, para casos especiales o correcciones.
+- **Botones de cada tarjeta**: quedan ocultos tras el boton `Ajustar puntos`, que despliega un panel flotante sobre la tarjeta con las sumas, las restas y el reset. Sirve para correcciones sueltas; en las estadisticas por categoria esos puntos se atribuyen a la ultima pregunta abierta. Solo se puede tener un panel abierto a la vez y se cierra al pulsar fuera o con `Escape`.
 
 Si se cambia la pregunta de una casilla donde ya se habian repartido puntos, esos puntos se devuelven automaticamente, porque esa pregunta deja de jugarse.
 

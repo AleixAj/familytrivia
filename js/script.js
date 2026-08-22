@@ -508,9 +508,18 @@ function teamCardHtml(index) {
                   <button type="button" class="comodin rojo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín rojo como usado">C</button>
                   <button type="button" class="comodin morado" onclick="this.classList.toggle('used')" aria-label="Marcar comodín morado como usado">C</button>
                 </div>
-                <div class="score-buttons">${scoreRows}
-                  <div class="reset-wrapper">
-                    <button class="btn-small reset" onclick="resetTeam(${index})">Reset</button>
+                <button type="button" class="score-toggle" id="score-toggle-${index}"
+                        onclick="toggleScoreButtons(${index})"
+                        aria-expanded="false" aria-controls="score-panel-${index}">
+                  <i class="bi bi-plus-slash-minus" aria-hidden="true"></i>
+                  <span>Ajustar puntos</span>
+                  <i class="bi bi-chevron-down score-toggle-caret" aria-hidden="true"></i>
+                </button>
+                <div class="score-collapse" id="score-panel-${index}" inert>
+                  <div class="score-buttons">${scoreRows}
+                    <div class="reset-wrapper">
+                      <button class="btn-small reset" onclick="resetTeam(${index})">Reset</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -542,6 +551,27 @@ function renderTeamCards() {
 }
 
 // Resizes every per-team array and rebuilds the scoreboard cards.
+// Manual score buttons live behind a toggle: points are usually handed out from
+// the scoring screen, so the cards stay compact until a correction is needed.
+function toggleScoreButtons(teamIndex, force) {
+  const panel = document.getElementById(`score-panel-${teamIndex}`);
+  const toggle = document.getElementById(`score-toggle-${teamIndex}`);
+  if (!panel || !toggle) return;
+
+  const open = force ?? !panel.classList.contains('is-open');
+  // Only one panel open at a time keeps the scoreboard readable.
+  if (open) {
+    document.querySelectorAll('.score-collapse.is-open').forEach(other => {
+      if (other !== panel) toggleScoreButtons(Number(other.id.replace('score-panel-', '')), false);
+    });
+  }
+  panel.classList.toggle('is-open', open);
+  toggle.classList.toggle('is-open', open);
+  toggle.setAttribute('aria-expanded', String(open));
+  if (open) panel.removeAttribute('inert');
+  else panel.setAttribute('inert', '');
+}
+
 function setTeamCount(count) {
   teamCount = Math.max(1, Math.min(MAX_PLAYERS, count));
 
@@ -2378,6 +2408,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // A click anywhere else closes the manual score panel.
+  document.addEventListener('click', (e) => {
+    const open = document.querySelector('.score-collapse.is-open');
+    if (!open) return;
+    const index = Number(open.id.replace('score-panel-', ''));
+    if (open.contains(e.target) || document.getElementById(`score-toggle-${index}`)?.contains(e.target)) return;
+    toggleScoreButtons(index, false);
+  });
+
   // Escape closes whatever is on top: ranking first, then the question overlay.
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
@@ -2387,6 +2426,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (isAwardOverlayOpen()) {
       closeAwardOverlay();
+      return;
+    }
+    const openScorePanel = document.querySelector('.score-collapse.is-open');
+    if (openScorePanel) {
+      toggleScoreButtons(Number(openScorePanel.id.replace('score-panel-', '')), false);
       return;
     }
     const questionOverlay = document.getElementById('overlay');
@@ -2476,6 +2520,7 @@ window.resolveQuestion = resolveQuestion;
 window.closeOverlay = closeOverlay;
 window.adjustScore = adjustScore;
 window.resetTeam = resetTeam;
+window.toggleScoreButtons = toggleScoreButtons;
 window.resetAllScores = resetAllScores;
 window.resetBoardAndScores = resetBoardAndScores;
 window.showFinalRanking = showFinalRanking;
