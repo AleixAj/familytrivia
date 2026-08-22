@@ -316,17 +316,35 @@ function initRuletasPage() {
   const spinBothBtn = document.getElementById('spinBothBtn');
   const teamsListEl = document.getElementById('teamsList');
   const clearTeamsBtn = document.getElementById('clearTeamsBtn');
-  // sessionStorage persists across normal navigations, but F5 starts a clean setup.
+  // sessionStorage persists across normal navigations. On F5 we start clean,
+  // but if there are pairs already formed we ask first instead of losing them.
   const _navType = (performance.getEntriesByType?.('navigation')?.[0]?.type)
     ?? (performance.navigation?.type === 1 ? 'reload' : 'navigate');
-  if (_navType === 'reload') {
-    sessionStorage.removeItem('ruletaTeams');
-    sessionStorage.removeItem('familyTriviaGameState');
-    localStorage.removeItem('ruletaTeamNames');
-  }
 
   let teams = readStored(sessionStorage, 'ruletaTeams', []);
   if (!Array.isArray(teams)) teams = [];
+
+  const clearEverything = () => {
+    teams = [];
+    sessionStorage.removeItem('ruletaTeams');
+    sessionStorage.removeItem('familyTriviaGameState');
+    localStorage.removeItem('ruletaTeamNames');
+  };
+
+  if (_navType === 'reload') {
+    if (teams.length) {
+      askResume({
+        title: 'Tenéis equipos formados',
+        text: 'Has recargado la página. ¿Quieres conservar las parejas ya formadas?',
+        keepLabel: 'Conservar equipos',
+        resetLabel: 'Empezar de nuevo',
+        onKeep: () => {},
+        onReset: () => { clearEverything(); renderTeams(); }
+      });
+    } else {
+      clearEverything();
+    }
+  }
 
   function syncTeams() { sessionStorage.setItem('ruletaTeams', JSON.stringify(teams)); }
 

@@ -122,6 +122,10 @@ La dificultad aumenta segun el valor de la casilla:
 - 400 y 500: dificultad media.
 - 700 y 800: dificultad dificil.
 
+### Progreso del tablero
+
+Junto a la barra de turno hay un contador de casillas jugadas (por ejemplo `14/36`). Al jugar la ultima, el juego avisa de que se puede finalizar la partida.
+
 ### Turnos
 
 Encima del tablero hay una barra que indica de que equipo es el turno, resaltando ademas su tarjeta en el marcador. El turno pasa solo al siguiente equipo cuando se cierra una pregunta ya resuelta, y el presentador puede corregirlo o saltarlo con las flechas. En el modo de un jugador la barra no aparece.
@@ -246,7 +250,7 @@ Si el presentador entra en `Editar equipos` desde una partida en curso, el juego
 
 Si se cambia el numero de parejas o de jugadores, la partida empieza de cero porque el tablero anterior ya no encaja con las nuevas tarjetas.
 
-Si se recarga la pagina con `F5`, se reinician la partida y los equipos guardados.
+Si se recarga la pagina con `F5` durante una partida con progreso, el juego pregunta si continuar donde lo dejasteis o empezar de nuevo, en vez de borrarla sin avisar. En `ruletas.html` pasa lo mismo con las parejas ya formadas.
 
 ## Fin de partida
 
@@ -289,6 +293,11 @@ FamilyProject/
 │   ├── script.js
 │   ├── ruletas.js
 │   └── footer.js
+├── vendor/
+│   ├── bootstrap/
+│   ├── bootstrap-icons/
+│   ├── chart/
+│   └── fonts/
 ├── img/
 └── audios/
 ```
@@ -314,10 +323,13 @@ Para cambiar categorias o valores del tablero, edita:
 
 El archivo `index.html` carga primero `js/questions.js` y despues `js/script.js`, asi que el orden de esos scripts es importante.
 
+## Funciona sin conexion
+
+Todas las librerias estan servidas desde el propio proyecto, en `vendor/`: Bootstrap, Bootstrap Icons (con sus fuentes), Chart.js y las tipografias Poppins y Russo One (subconjuntos latin y latin-ext). La pagina no hace ninguna peticion a servidores externos, asi que el juego se ve y funciona igual sin internet, algo util en una casa rural con mala cobertura.
+
 ## Notas
 
-- El proyecto es independiente y mantiene sus propios archivos `css/`, `js/`, `img/` y `audios/`.
-- Usa Bootstrap, Bootstrap Icons, Google Fonts y Chart.js desde CDN.
+- El proyecto es independiente y mantiene sus propios archivos `css/`, `js/`, `img/`, `audios/` y `vendor/`.
 - Esta pensado para uso local, reuniones familiares o despliegue estatico sencillo.
 - El footer incluye un enlace al portfolio de Aleix Auque usando el logo `AJ` con el gradiente azul cian del portfolio.
 - Las animaciones se desactivan automaticamente para usuarios con `prefers-reduced-motion: reduce`, mejorando la accesibilidad sin perder el efecto visual para el resto.

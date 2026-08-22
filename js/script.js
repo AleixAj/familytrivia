@@ -538,6 +538,7 @@ function renderTeamCards() {
   for (let i = 0; i < teamCount; i++) renderScore(i);
   applyTeamNeonBorders();
   renderTurn();
+  renderBoardProgress();
 }
 
 // Resizes every per-team array and rebuilds the scoreboard cards.
@@ -909,8 +910,8 @@ function renderTurn() {
   const nameEl = document.getElementById('turnName');
   if (!bar || !nameEl) return;
 
-  // A single player has no turns to pass.
-  bar.classList.toggle('d-none', teamCount < 2);
+  // A single player has no turns to pass, but the progress counter still applies.
+  bar.classList.toggle('turn-bar--solo', teamCount < 2);
   if (currentTurn >= teamCount) currentTurn = 0;
 
   nameEl.textContent = teamNames[currentTurn] || '';
@@ -921,6 +922,29 @@ function renderTurn() {
     document.getElementById(`team-col-${i}`)?.classList.toggle('is-turn', i === currentTurn && teamCount > 1);
   }
 }
+
+// Board progress: how many cells have been played out of the whole board.
+function renderBoardProgress() {
+  const el = document.getElementById('boardProgress');
+  if (!el) return;
+
+  const total = values.length * cols;
+  const played = Object.keys(cellStates).filter(isCellPlayed).length + [...revealedAudioCells].filter(key => !cellStates[key]).length;
+  el.textContent = `${played}/${total}`;
+  el.classList.toggle('is-complete', played >= total);
+
+  return { played, total };
+}
+
+// Tell the presenter when the board is finished so nobody has to count squares.
+function checkBoardFinished() {
+  const progress = renderBoardProgress();
+  if (!progress || progress.played < progress.total || boardFinishedNotified) return;
+  boardFinishedNotified = true;
+  showToast('Se han jugado todas las casillas: ya podéis finalizar la partida', 'success');
+}
+
+let boardFinishedNotified = false;
 
 function setTurn(index) {
   if (teamCount < 1) return;
@@ -1193,6 +1217,65 @@ function clearSavedGameOnReload() {
   if (getNavigationType() === 'reload') clearSavedGame();
 }
 
+// Is there anything worth keeping in the saved game (points, played cells, names)?
+function hasSavedProgress() {
+  const state = readStored(sessionStorage, GAME_STATE_KEY, null);
+  if (!state || typeof state !== 'object') return false;
+
+  const scored = Array.isArray(state.teamScores) && state.teamScores.some(score => Number(score) !== 0);
+  const played = state.cellStates && Object.keys(state.cellStates).length > 0;
+  const opened = state.assignedQuestionRefs && Object.keys(state.assignedQuestionRefs).length > 0;
+  return Boolean(scored || played || opened);
+}
+
+// Shared "continue or start over" dialog, used after a reload.
+function askResume({ title, text, keepLabel, resetLabel, onKeep, onReset }) {
+  const el = document.getElementById('resumeModal');
+  const keepBtn = document.getElementById('resumeKeepBtn');
+  const resetBtn = document.getElementById('resumeResetBtn');
+
+  // Without the dialog (or Bootstrap) the safest default is to keep playing.
+  if (!el || !keepBtn || !resetBtn || !window.bootstrap?.Modal) {
+    onKeep?.();
+    return;
+  }
+
+  const titleEl = document.getElementById('resumeModalLabel');
+  const textEl = document.getElementById('resumeText');
+  if (title && titleEl) titleEl.textContent = title;
+  if (text && textEl) textEl.textContent = text;
+
+  const setLabel = (btn, label) => {
+    const span = btn.querySelector('span');
+    if (span) span.textContent = label;
+  };
+  if (keepLabel) setLabel(keepBtn, keepLabel);
+  if (resetLabel) setLabel(resetBtn, resetLabel);
+
+  const modal = bootstrap.Modal.getOrCreateInstance(el);
+  const choose = (action) => {
+    keepBtn.removeEventListener('click', keep);
+    resetBtn.removeEventListener('click', reset);
+    modal.hide();
+    action?.();
+  };
+  const keep = () => choose(onKeep);
+  const reset = () => choose(onReset);
+
+  keepBtn.addEventListener('click', keep);
+  resetBtn.addEventListener('click', reset);
+  el.addEventListener('shown.bs.modal', () => keepBtn.focus(), { once: true });
+  modal.show();
+}
+
+function showIntroScreen() {
+  const intro = document.getElementById('triviaIntro');
+  const game = document.getElementById('gameContainer');
+  intro?.classList.remove('d-none', 'intro-exiting');
+  game?.classList.add('d-none');
+  backToModeSelect();
+}
+
 function isIndexGamePage() {
   return Boolean(document.getElementById('board') && document.getElementById('gameContainer'));
 }
@@ -1349,6 +1432,7 @@ function restoreGameState() {
   applyUsedComodinesState(state.usedComodines);
   applyTeamNeonBorders();
   renderTurn();
+  renderBoardProgress();
 }
 
 // ==================== QUESTION LOGIC ====================
@@ -1791,6 +1875,7 @@ function closeOverlay() {
   currentRow = null;
   currentCol = null;
   renderAwardPanel();
+  checkBoardFinished();
   saveGameState();
 }
 
@@ -2062,6 +2147,7 @@ function resetBoardAndScores() {
   revealedAudioCells.clear();
   awardedPoints = {};
   turnAdvancedCells.clear();
+  boardFinishedNotified = false;
   setTurn(0);
   undoStack.length = 0;
   updateUndoButton();
@@ -2075,6 +2161,7 @@ function resetBoardAndScores() {
   lastQuestionResolved = false;
   scoreHistory = [new Array(teamCount).fill(0)];
   if (finalChart) { finalChart.destroy(); finalChart = null; }
+  renderBoardProgress();
   clearGameProgress();
 
 }
@@ -2150,14 +2237,32 @@ function onConfettiResize() {
 // Ruletas lives in js/ruletas.js. script.js keeps shared helpers and Family Trivia only.
 
 document.addEventListener('DOMContentLoaded', () => {
-  clearSavedGameOnReload();
+  // On reload, ask before throwing away a game that is actually in progress.
+  // On ruletas.html the wheels script owns this decision, so don't wipe anything here.
+  const onGamePage = isIndexGamePage();
+  const reloadedWithGame = onGamePage && getNavigationType() === 'reload' && hasSavedProgress();
+  if (onGamePage && !reloadedWithGame) clearSavedGameOnReload();
+
   highlightActiveButton();
   buildBoard();
   applyGameMode();
   restoreGameState();
   initIndexPage();
   // Opening the panel needs the board and the cards already in place.
-  startGamePanelFromNavigation();
+  if (reloadedWithGame) {
+    sessionStorage.removeItem('familyTriviaStartGame');
+    askResume({
+      onKeep: () => startTrivia(),
+      onReset: () => {
+        resetBoardAndScores();
+        clearSavedGame();
+        applyGameMode();
+        showIntroScreen();
+      }
+    });
+  } else {
+    startGamePanelFromNavigation();
+  }
 
   // Ctrl+Z / Cmd+Z undoes the last scoring change.
   document.addEventListener('keydown', (e) => {
