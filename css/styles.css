@@ -1799,6 +1799,8 @@ h1 {
   width: 100%;
   height: 220px;
   margin-bottom: 14px;
+  /* Safety net: a chart canvas must never spill out of its box. */
+  overflow: hidden;
 }
 
 .stats-divider {
@@ -3095,5 +3097,81 @@ html {
   }
   .score-toggle span {
     display: none;
+  }
+}
+
+/* ==================== TOUCH TARGETS ON PHONES AND TABLETS ==================== */
+/* Anything the presenter taps mid-game needs a comfortable target: the board
+   cells were 38px tall on a 360px screen and the jokers only 24px. */
+@media (max-width: 768px) {
+  .value {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .category {
+    /* 8px was unreadable on small phones. */
+    font-size: clamp(11px, 2.6vw, 14px);
+  }
+  .comodin {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  .hint-btn {
+    min-height: 40px;
+  }
+  .rename-btn {
+    min-width: 32px;
+    min-height: 32px;
+  }
+  /* A thin bar is hard to drag with a finger: keep the look, grow the hit area. */
+  .progress-bar-custom {
+    height: 12px;
+  }
+  .progress-handle {
+    width: 20px;
+    height: 20px;
+  }
+  .stat-chart-wrap {
+    height: 240px;
+  }
+}
+
+/* The scoring screen can be long: keep its buttons reachable without scrolling. */
+@media (max-width: 900px) {
+  .award-box .overlay-actions {
+    position: sticky;
+    bottom: -22px;
+    margin: 0 -14px -18px;
+    padding: 12px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, #1f1f1f 72%, rgba(31, 31, 31, 0));
+  }
+}
+
+/* Remove button of a formed pair (built in js/ruletas.js). */
+.team-remove-btn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.team-remove-btn:hover { filter: brightness(1.1); }
+
+@media (max-width: 768px) {
+  .team-remove-btn {
+    min-height: 38px;
+    padding: 8px 14px;
+  }
+  /* Delete button of each name in the wheels. */
+  .names-list button {
+    min-width: 38px;
+    min-height: 38px;
   }
 }

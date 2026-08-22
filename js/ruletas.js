@@ -389,7 +389,7 @@ function initRuletasPage() {
       div.innerHTML = `
         <span style="background:${color};color:${DARK_LABEL_TEAMS.has(teamNum) ? '#000' : '#fff'};font-weight:700;padding:2px 10px;border-radius:99px;font-size:13px;white-space:nowrap;text-transform:capitalize;">Equipo ${colorName}</span>
         <span style="font-weight:700;flex:1">${escapeHtml(team)}</span>
-        <button style="background:#ef4444;color:white;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Eliminar</button>
+        <button class="team-remove-btn" type="button">Eliminar</button>
       `;
       div.querySelector('button').onclick = () => {
         teams.splice(i, 1);

@@ -1322,6 +1322,7 @@ let lastQuestionResolved = false;
 let categoryStats = {};   // { 'Category': { 0: 150, 1: -75, ... }, ... }
 let scoreHistory = [[0, 0, 0, 0, 0]]; // Score snapshots after each adjustment, used by the final progression chart.
 let finalChart = null;
+let finalChartSetup = null;   // chart config kept until the stats panel is shown
 // Used questions by category and difficulty to avoid repeats within each pool.
 let usedQuestionsByPool = {};   // key: "Category-difficulty" -> Set of used question objects
 
@@ -2068,6 +2069,7 @@ function showFinalRanking() {
 
     // Score progression chart
     if (finalChart) { finalChart.destroy(); finalChart = null; }
+    finalChartSetup = null;
     if (hasHistory && typeof Chart !== 'undefined') {
       const chartWrap = document.createElement('div');
       chartWrap.className = 'stat-chart-wrap';
@@ -2075,7 +2077,9 @@ function showFinalRanking() {
       chartWrap.appendChild(canvas);
       statsPanel.appendChild(chartWrap);
 
-      finalChart = new Chart(canvas, {
+      // Building the chart while the panel is hidden gives it a 0x0 canvas that
+      // never recovers, so keep the config and create it when it becomes visible.
+      finalChartSetup = { canvas, config: {
         type: 'line',
         data: {
           labels: scoreHistory.map((_, i) => i === 0 ? 'Inicio' : i === scoreHistory.length - 1 ? 'Final' : `P${i}`),
@@ -2102,7 +2106,7 @@ function showFinalRanking() {
             y: { ticks: { color: '#a8b5c8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
           }
         }
-      });
+      } };
 
       const chartDivider = document.createElement('hr');
       chartDivider.className = 'stats-divider';
@@ -2469,7 +2473,18 @@ function toggleFinalStats() {
   if (statsPanel) statsPanel.style.display = showing ? 'none' : 'block';
   if (rankingList) rankingList.style.display = showing ? 'block' : 'none';
   if (btn) btn.innerHTML = showing ? '📊 Ver estadísticas' : '🏆 Ver ranking';
-  if (!showing && finalChart) setTimeout(() => finalChart.resize(), 50);
+
+  if (showing) return;
+
+  // Now that the panel is on screen the canvas has a real size. A timeout is
+  // used instead of an animation frame so it also runs on a hidden tab.
+  setTimeout(() => {
+    if (!finalChart && finalChartSetup && typeof Chart !== 'undefined') {
+      finalChart = new Chart(finalChartSetup.canvas, finalChartSetup.config);
+    } else if (finalChart) {
+      finalChart.resize();
+    }
+  }, 30);
 }
 
 function toggleEditMode() {
