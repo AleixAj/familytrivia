@@ -2742,13 +2742,53 @@ html {
   transform: scale(0.92);
 }
 
-/* Card of the team whose turn it is. */
-.team-col.is-turn .team-score-header {
-  background: rgba(250, 204, 21, 0.14);
+/* Card of the team whose turn it is: a neon blue light travelling around the
+   whole card, header included, like the buttons on the start screen. */
+@property --turn-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
 }
-.team-col.is-turn .team {
-  outline: 2px solid rgba(250, 204, 21, 0.55);
-  outline-offset: 2px;
+
+.team-card {
+  position: relative;
+}
+
+.team-col.is-turn .team-card::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 15px;
+  padding: 3px;
+  background: conic-gradient(from var(--turn-angle),
+    rgba(56, 189, 248, 0) 0deg,
+    rgba(56, 189, 248, 0) 190deg,
+    rgba(56, 189, 248, 0.75) 285deg,
+    #a5f3fc 330deg,
+    rgba(56, 189, 248, 0) 360deg);
+  /* Keep only the ring: the inner area is masked out. */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: turnSpin 3s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soft glow under the card so the turn reads at a glance. */
+.team-col.is-turn .team-card::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 15px;
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.28);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes turnSpin {
+  to { --turn-angle: 360deg; }
 }
 
 /* ==================== ASSISTED SCORING ==================== */
@@ -2863,4 +2903,10 @@ html {
   .award-list { grid-template-columns: 1fr; }
   .turn-label { font-size: 0.82rem; }
   .turn-bar { margin: 12px auto -2px; }
+  /* Cards sit closer together here, so the ring hugs the card. */
+  .team-col.is-turn .team-card::before,
+  .team-col.is-turn .team-card::after {
+    inset: -2px;
+    border-radius: 12px;
+  }
 }

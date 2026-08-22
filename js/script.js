@@ -483,7 +483,7 @@ function teamCardHtml(index) {
 
   return `
           <div class="col-6 col-sm-4 col-md-4 col-lg team-col" id="team-col-${index}" style="--i:${index}">
-            <div class="d-flex flex-column h-100">
+            <div class="d-flex flex-column h-100 team-card">
               <div class="team-score-header" id="score-top-${index}">0 Pts</div>
               <div class="team flex-grow-1 team--has-header" id="team-${index}">
                 <div class="team-name-row">
