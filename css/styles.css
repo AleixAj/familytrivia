@@ -453,7 +453,7 @@
   flex-wrap: wrap;
 }
 
-@keyframes glowPulse {
+@keyframes glowPulseHalo {
   0%, 100% { opacity: 0.1; transform: scale(0.9); }
   50%       { opacity: 0.3; transform: scale(1.3); }
 }
@@ -483,7 +483,7 @@
   filter: blur(22px);
   opacity: 0.2;
   z-index: -1;
-  animation: glowPulse 2s ease-in-out infinite;
+  animation: glowPulseHalo 2s ease-in-out infinite;
 }
 .btn-salas-primary:hover {
   transform: translateY(-3px);
@@ -526,6 +526,131 @@
 }
 .btn-intro-secondary:hover {
   transform: translateY(-3px);
+}
+
+/* ==================== SOLO MODE ==================== */
+.solo-name-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: soloPanelIn 0.28s ease both;
+}
+
+@keyframes soloPanelIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.solo-name-label {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.solo-name-input {
+  width: min(100%, 300px);
+  padding: 12px 18px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.solo-name-input::placeholder { color: var(--muted); }
+.solo-name-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.18);
+}
+
+/* One single wide card centered when playing alone. */
+body.solo-mode #teamsContainer > .team-col {
+  flex: 0 0 auto;
+  width: min(100%, 340px);
+  max-width: 100%;
+}
+
+/* ==================== MULTIPLAYER LAYOUT ==================== */
+/* Five cards per row on desktop; extra players wrap onto the next row. */
+@media (min-width: 992px) {
+  #teamsContainer > .team-col {
+    flex: 0 0 auto;
+    width: 20%;
+  }
+}
+
+/* ==================== RULETAS INTRO ==================== */
+.ruletas-intro {
+  max-width: 620px;
+  margin: -6px auto 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  text-align: center;
+}
+.ruletas-intro strong { color: #fff; }
+
+/* ==================== SETUP MODALS ==================== */
+.setup-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.setup-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
+}
+
+.setup-number {
+  width: 140px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  padding: 10px 12px;
+}
+
+.setup-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.player-names-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.player-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-name-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.player-name-input {
+  flex: 1 1 auto;
+  width: auto;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 0.95rem;
 }
 
 /* ==================== GENERAL ==================== */
@@ -620,6 +745,7 @@ h1 {
 }
 
 .value {
+  position: relative;
   padding: 14px;
   text-align: center;
   font-size: 24px;
@@ -629,17 +755,32 @@ h1 {
   font-weight: 700;
   color: var(--accent);
   border: 3px solid rgba(79, 205, 255, 0.55);
-  box-shadow: 0 6px 18px rgba(79, 152, 255, 0.18), 0 0 18px rgba(79, 152, 255, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 3px 1px rgba(40, 195, 255, 0.35), 0 0 8px rgba(40, 195, 255, 0.1);
   user-select: none;
 }
 
+/* The neon pulse lives on a pseudo-element so only its opacity animates:
+   animating box-shadow on all 36 cells repaints the board every frame. */
+.value::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  box-shadow: 0 0 5px 2px rgba(40, 195, 255, 0.85), 0 0 10px rgba(40, 195, 255, 0.18);
+  opacity: 0;
+  pointer-events: none;
+}
+
 @keyframes cellGlow {
-  0%, 100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 3px 1px rgba(40, 195, 255, 0.35), 0 0 8px rgba(40, 195, 255, 0.1); }
-  50%       { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 5px 2px rgba(40, 195, 255, 0.85), 0 0 10px rgba(40, 195, 255, 0.18); }
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
 }
 
 .value:not(.disabled) {
   border-color: rgba(40, 195, 255, 0.95);
+}
+
+.value:not(.disabled)::after {
   animation: cellGlow 2.6s ease-in-out infinite;
 }
 
@@ -1193,6 +1334,10 @@ h1 {
   font-size: 24px;
   text-shadow: 0 0 1px rgba(0, 0, 0, 0.85);
   -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0.8);
+  /* Long pair names ("Fulanito y Menganita") must wrap instead of overflowing. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
 }
 
 .rename-btn {
@@ -2463,4 +2608,74 @@ h1 {
   .winner-announcement {
     font-size: 16px;
   }
+}
+
+/* ==================== POLISH: ENTRANCES, FOCUS, MOTION ==================== */
+
+/* Board cells fade in one after another when the panel opens. */
+@keyframes cellIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+.game-entering .value {
+  animation: cellIn 0.38s cubic-bezier(.2, 1, .25, 1) both;
+  animation-delay: calc(var(--i, 0) * 14ms);
+}
+.game-entering .category {
+  animation: cellIn 0.34s cubic-bezier(.2, 1, .25, 1) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+
+/* Team cards drop in when the scoreboard is (re)built. */
+@keyframes teamCardIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+.cards-entering > .team-col {
+  animation: teamCardIn 0.42s cubic-bezier(.2, 1, .25, 1) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+.team {
+  transition: box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+/* Consistent, visible keyboard focus across every control. */
+:where(button, a, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+.value:focus-visible {
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(250, 204, 21, 0.35);
+  color: #fff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Respect the system setting for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Empty state for the formed-teams panel. */
+.teams-empty {
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: center;
+  padding: 14px 8px;
 }

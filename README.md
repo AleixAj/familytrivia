@@ -6,7 +6,7 @@
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
 ![Chart.js](https://img.shields.io/badge/Chart.js-ranking-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
 
-Juego familiar de preguntas estilo tablero, pensado para jugar todos juntos en una casa, con un presentador dirigiendo la partida desde una tablet o pantalla visible para todos. Incluye ruletas para formar equipos equilibrados, preguntas por categorias, respuestas simultaneas, control manual de puntos y ranking final con estadisticas.
+Juego familiar de preguntas estilo tablero, pensado para jugar todos juntos en una casa, con un presentador dirigiendo la partida desde una tablet o pantalla visible para todos. Se puede jugar solo, cada uno por su cuenta o por parejas formadas con las ruletas. Incluye preguntas por categorias, respuestas simultaneas, control manual de puntos y ranking final con estadisticas.
 
 ## Capturas de pantalla
 
@@ -63,6 +63,16 @@ El objetivo es conseguir la mayor puntuacion posible respondiendo preguntas de d
 
 Al terminar todo el tablero, se muestra un ranking final con el equipo ganador, confeti y estadisticas de rendimiento por equipo y categoria.
 
+## Modos de juego
+
+Al abrir el juego se elige uno de los tres modos:
+
+- **Un jugador**: se pide el nombre y se juega solo, con una unica tarjeta de puntuacion.
+- **Multijugador individual**: se indica cuantas personas juegan (de 2 a 12) y el nombre de cada una. Cada persona tiene su propia tarjeta.
+- **Multijugador por parejas**: lleva a `ruletas.html`, donde se forman las parejas. Cada pareja se convierte en una tarjeta con los dos nombres.
+
+En todos los modos las tarjetas del marcador se generan segun el numero real de participantes: hasta cinco por fila en escritorio, y las siguientes pasan a la fila de abajo.
+
 ## Reglas
 
 ### Preparacion
@@ -78,9 +88,10 @@ Asi cada equipo combina conocimientos distintos y puede apoyarse mejor en pregun
 
 ### Equipos
 
-- Pueden jugar hasta 5 equipos.
-- Los equipos por defecto son Rojo, Azul, Verde, Amarillo y Morado.
-- Los nombres se pueden cambiar desde el marcador usando el boton de editar.
+- Pueden jugar hasta 12 equipos o jugadores.
+- Los cinco primeros mantienen los colores clasicos (Rojo, Azul, Verde, Amarillo y Morado) y a partir del sexto se usan rosa, cian, naranja, lima, indigo, turquesa y magenta.
+- Sin nombres propios, las tarjetas se llaman `Jugador 1`, `Jugador 2`... en modo individual, y `Equipo Rojo`, `Equipo Azul`... en modo por parejas.
+- Los nombres se pueden cambiar en cualquier momento desde el marcador usando el boton de editar.
 - Si los equipos se forman desde `ruletas.html`, los nombres generados se trasladan automaticamente al tablero principal.
 - Debe haber un presentador que abre preguntas, controla tiempos, revela respuestas y reparte puntos.
 - Cada equipo necesita papel, pizarra o algo similar para escribir sus respuestas.
@@ -120,7 +131,7 @@ La dificultad aumenta segun el valor de la casilla:
 5. Cuando el presentador lo indique, todos giran o muestran sus respuestas a la vez.
 6. El presentador pulsa `Resolver` para mostrar la respuesta correcta o la explicacion.
 7. El presentador suma o resta los puntos correspondientes a cada equipo.
-8. La casilla queda marcada como usada y ya no se puede volver a escoger.
+8. La casilla queda marcada como usada y ya no puntua, aunque se puede volver a abrir para repasar la respuesta.
 
 La ventaja del equipo que tiene el turno es elegir la casilla. La pregunta, sin embargo, la responden todos los equipos.
 
@@ -196,6 +207,8 @@ Funcionamiento:
 6. Si solo queda una persona en cada ruleta, se emparejan automaticamente.
 7. Cuando esten todos los equipos formados, pulsa `Empezar` para ir al tablero.
 
+Al pulsar `Empezar` se cuentan las parejas de la tabla `Equipos Formados` y se crea una tarjeta por pareja, con los dos nombres. Si no hay ninguna pareja formada, se entra con los cinco equipos por defecto.
+
 Los equipos formados se guardan temporalmente para pasar al tablero principal. Al recargar la pagina se limpian los equipos guardados.
 
 ## Interfaz
@@ -207,6 +220,7 @@ Los equipos formados se guardan temporalmente para pasar al tablero principal. A
 - Animaciones cuidadas en momentos clave: apertura y cierre de pregunta, opciones que entran escalonadas, feedback de respuesta (acierto / fallo), sello en casillas usadas, pulso del marcador al sumar o restar puntos y entrada animada del ranking final con `count-up` del ganador.
 - Las ruletas tambien tienen feedback animado: cada nombre nuevo entra con una pequena animacion, el ganador hace un pulso al revelarse y los equipos formados se anaden con una transicion clara.
 - Toda la capa de animaciones respeta `prefers-reduced-motion`, asi que se desactivan automaticamente si el sistema operativo lo pide.
+- El tablero se puede manejar con teclado: `Tab` recorre las casillas, `Enter` o `Espacio` abren la pregunta y `Escape` cierra la pregunta o el ranking. Cada casilla anuncia su categoria y sus puntos para lectores de pantalla.
 
 ## Estado de partida
 
@@ -217,6 +231,8 @@ Si el presentador entra en `Editar equipos` desde una partida en curso, el juego
 - Preguntas asignadas.
 - Comodines usados.
 - Estadisticas acumuladas para el ranking final.
+
+Si se cambia el numero de parejas o de jugadores, la partida empieza de cero porque el tablero anterior ya no encaja con las nuevas tarjetas.
 
 Si se recarga la pagina con `F5`, se reinician la partida y los equipos guardados.
 
@@ -293,3 +309,5 @@ El archivo `index.html` carga primero `js/questions.js` y despues `js/script.js`
 - Esta pensado para uso local, reuniones familiares o despliegue estatico sencillo.
 - El footer incluye un enlace al portfolio de Aleix Auque usando el logo `AJ` con el gradiente azul cian del portfolio.
 - Las animaciones se desactivan automaticamente para usuarios con `prefers-reduced-motion: reduce`, mejorando la accesibilidad sin perder el efecto visual para el resto.
+- Los scripts se cargan con `defer` manteniendo su orden, hay `preconnect` a Google Fonts y al CDN, y las imagenes que no se ven al entrar se cargan solo cuando hacen falta.
+- El pulso de neon del tablero se anima por opacidad sobre un pseudo-elemento en lugar de animar `box-shadow` en las 36 casillas, que obligaba a repintar el tablero en cada fotograma.

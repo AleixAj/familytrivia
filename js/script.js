@@ -24,9 +24,16 @@ function showToast(message, type = 'warning') {
   el.setAttribute('role', 'alert');
   el.innerHTML = `<div class="d-flex"><div class="toast-body fw-semibold">${escapeHtml(message)}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button></div>`;
   container.appendChild(el);
-  const toast = new bootstrap.Toast(el, { delay: 3500 });
-  toast.show();
-  el.addEventListener('hidden.bs.toast', () => el.remove());
+
+  // Bootstrap JS may be unavailable (blocked CDN); fall back to a plain timed toast.
+  if (window.bootstrap?.Toast) {
+    const toast = new bootstrap.Toast(el, { delay: 3500 });
+    toast.show();
+    el.addEventListener('hidden.bs.toast', () => el.remove());
+  } else {
+    el.classList.add('show');
+    setTimeout(() => el.remove(), 3500);
+  }
 }
 
 // ==================== NAVIGATION ====================
@@ -37,8 +44,47 @@ function goTo(page) {
 
 function goToGamePanel() {
   if (typeof saveGameState === 'function') saveGameState();
+  sessionStorage.setItem(GAME_MODE_KEY, 'teams');
+
+  // One card per pair formed in the wheels; fall back to the classic five teams.
+  let pairs = [];
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem('ruletaTeams') || '[]');
+    if (Array.isArray(parsed)) pairs = parsed.filter(Boolean);
+  } catch {}
+
+  let count = DEFAULT_TEAMS;
+  if (pairs.length > MAX_PLAYERS) {
+    count = MAX_PLAYERS;
+    showToast(`Solo caben ${MAX_PLAYERS} equipos, se usarán los ${MAX_PLAYERS} primeros`);
+  } else if (pairs.length) {
+    count = pairs.length;
+  } else {
+    showToast('No has formado ninguna pareja: se usarán los 5 equipos por defecto', 'info');
+  }
+
+  // A different number of teams means the previous board no longer fits: start clean.
+  const savedCount = Number(JSON.parse(sessionStorage.getItem(GAME_STATE_KEY) || '{}').teamCount) || null;
+  if (savedCount && savedCount !== count) clearGameProgress();
+
+  sessionStorage.setItem(TEAM_COUNT_KEY, String(count));
   sessionStorage.setItem('familyTriviaStartGame', '1');
   window.location.href = 'index.html?start=1';
+}
+
+function goToTeamsSetup() {
+  const fromOtherMode = getGameMode() !== 'teams';
+  sessionStorage.setItem(GAME_MODE_KEY, 'teams');
+  sessionStorage.setItem(TEAM_COUNT_KEY, String(DEFAULT_TEAMS));
+
+  if (fromOtherMode) {
+    // Switching from solo/players starts a new game, so don't carry that progress over.
+    clearGameProgress();
+    sessionStorage.removeItem(CUSTOM_NAMES_KEY);
+    window.location.href = 'ruletas.html';
+    return;
+  }
+  goTo('ruletas.html');
 }
 
 function goToPortfolio() {
@@ -74,6 +120,196 @@ function closeRulesModal() {
   modalEl.setAttribute('aria-hidden', 'true');
 }
 
+// ==================== GAME MODE ====================
+// 'solo'    -> 1 tarjeta
+// 'players' -> N tarjetas, una por persona
+// 'teams'   -> 5 equipos formados en ruletas.html
+const GAME_MODE_KEY = 'familyTriviaMode';
+const TEAM_COUNT_KEY = 'familyTriviaTeamCount';
+const CUSTOM_NAMES_KEY = 'familyTriviaNames';
+const DEFAULT_TEAMS = 5;
+const MIN_PLAYERS = 2;
+const MAX_PLAYERS = 12;
+
+function getGameMode() {
+  const mode = sessionStorage.getItem(GAME_MODE_KEY);
+  return mode === 'solo' || mode === 'players' ? mode : 'teams';
+}
+
+function getStoredTeamCount() {
+  const stored = parseInt(sessionStorage.getItem(TEAM_COUNT_KEY), 10);
+  return Number.isFinite(stored) ? stored : null;
+}
+
+// Names typed in solo/players setup; ruletas names live in their own storage.
+function getCustomNames() {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(CUSTOM_NAMES_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function storeCustomNames(names) {
+  sessionStorage.setItem(CUSTOM_NAMES_KEY, JSON.stringify(names));
+}
+
+function applyGameMode(mode = getGameMode()) {
+  const solo = mode === 'solo';
+  document.body.classList.toggle('solo-mode', solo);
+
+  const count = solo ? 1 : (getStoredTeamCount() || DEFAULT_TEAMS);
+
+  setTeamCount(count);
+  document.getElementById('teamsRuletaBtn')?.classList.toggle('d-none', mode !== 'teams');
+}
+
+// ==================== SETUP MODALS ====================
+function openSetupModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (window.bootstrap?.Modal) {
+    bootstrap.Modal.getOrCreateInstance(el).show();
+    return;
+  }
+  el.classList.add('show');
+  el.style.display = 'block';
+  el.removeAttribute('aria-hidden');
+}
+
+function closeSetupModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (window.bootstrap?.Modal) {
+    bootstrap.Modal.getOrCreateInstance(el).hide();
+    return;
+  }
+  el.classList.remove('show');
+  el.style.display = 'none';
+  el.setAttribute('aria-hidden', 'true');
+}
+
+// ---- Un jugador ----
+function chooseSoloMode() {
+  document.getElementById('modeButtons')?.classList.add('d-none');
+  const panel = document.getElementById('soloNamePanel');
+  panel?.classList.remove('d-none');
+  const input = document.getElementById('soloNameInput');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+}
+
+function backToModeSelect() {
+  document.getElementById('soloNamePanel')?.classList.add('d-none');
+  document.getElementById('modeButtons')?.classList.remove('d-none');
+}
+
+function startSoloGame() {
+  const input = document.getElementById('soloNameInput');
+  const name = (input?.value || '').trim();
+  if (!name) {
+    showToast('Escribe tu nombre para empezar');
+    input?.focus();
+    return;
+  }
+  startCustomGame('solo', [name]);
+}
+
+// ---- Multijugador individual ----
+function choosePlayersMode() {
+  const input = document.getElementById('playersCountInput');
+  if (input) input.value = String(getStoredTeamCount() || 4);
+  openSetupModal('playersCountModal');
+  setTimeout(() => input?.focus(), 350);
+}
+
+function confirmPlayersCount() {
+  const input = document.getElementById('playersCountInput');
+  const count = parseInt(input?.value, 10);
+  if (!Number.isFinite(count) || count < MIN_PLAYERS || count > MAX_PLAYERS) {
+    showToast(`Escribe un número entre ${MIN_PLAYERS} y ${MAX_PLAYERS}`);
+    input?.focus();
+    return;
+  }
+
+  buildPlayerNameInputs(count);
+  closeSetupModal('playersCountModal');
+  setTimeout(() => {
+    openSetupModal('playerNamesModal');
+    setTimeout(() => document.querySelector('#playerNamesList input')?.focus(), 350);
+  }, 260);
+}
+
+function buildPlayerNameInputs(count) {
+  const list = document.getElementById('playerNamesList');
+  if (!list) return;
+  list.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement('div');
+    row.className = 'player-name-row';
+    row.innerHTML = `
+      <span class="player-name-dot" style="background:${teamColorAt(i)}"></span>
+      <input type="text" class="solo-name-input player-name-input" data-player="${i}"
+             maxlength="20" autocomplete="off" placeholder="Jugador ${i + 1}" />`;
+    list.appendChild(row);
+  }
+  list.dataset.count = String(count);
+}
+
+function readPlayerNameInputs() {
+  const list = document.getElementById('playerNamesList');
+  const count = parseInt(list?.dataset.count || '0', 10);
+  const names = [];
+  for (let i = 0; i < count; i++) {
+    const input = list.querySelector(`input[data-player="${i}"]`);
+    names.push((input?.value || '').trim() || `Jugador ${i + 1}`);
+  }
+  return names;
+}
+
+function skipPlayerNames() {
+  const count = parseInt(document.getElementById('playerNamesList')?.dataset.count || '0', 10);
+  startPlayersGame(Array.from({ length: count }, (_, i) => `Jugador ${i + 1}`));
+}
+
+function confirmPlayerNames() {
+  startPlayersGame(readPlayerNameInputs());
+}
+
+function startPlayersGame(names) {
+  if (!names.length) return;
+  closeSetupModal('playerNamesModal');
+  closeSetupModal('playersCountModal');
+  startCustomGame('players', names);
+}
+
+// Shared entry point for solo and players modes: fresh board, custom names, go.
+function startCustomGame(mode, names) {
+  sessionStorage.setItem(GAME_MODE_KEY, mode);
+  sessionStorage.setItem(TEAM_COUNT_KEY, String(names.length));
+  sessionStorage.removeItem('ruletaTeams');
+  storeCustomNames(names);
+
+  resetBoardAndScores();
+  applyGameMode(mode);
+
+  names.forEach((name, i) => {
+    teamNames[i] = name;
+    const el = document.getElementById(`team-name-${i}`);
+    if (el) el.textContent = name;
+  });
+
+  startTrivia();
+}
+
+// ---- Multijugador por parejas (ruletas) ----
+function chooseTeamsMode() {
+  goToTeamsSetup();
+}
+
 function startTrivia() {
   const intro = document.getElementById('triviaIntro');
   const game = document.getElementById('gameContainer');
@@ -82,9 +318,10 @@ function startTrivia() {
     intro?.classList.add('d-none');
     game?.classList.remove('d-none');
     game?.classList.add('game-entering');
-    setTimeout(() => game?.classList.remove('game-entering'), 650);
+    setTimeout(() => game?.classList.remove('game-entering'), 1400);
   }, 220);
   restoreGameState();
+  applyGameMode();
 }
 
 function shouldStartGamePanel() {
@@ -96,12 +333,6 @@ function startGamePanelFromNavigation() {
   if (!shouldStartGamePanel()) return;
   sessionStorage.removeItem('familyTriviaStartGame');
   startTrivia();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', startGamePanelFromNavigation);
-} else {
-  startGamePanelFromNavigation();
 }
 
 function highlightActiveButton() {
@@ -124,17 +355,19 @@ function highlightActiveButton() {
 }
 
 // ==================== BOARD SETUP ====================
-const cols = categories.length;
+// ruletas.html loads this file without js/questions.js, so guard the categories lookup.
+const cols = typeof categories === 'undefined' ? 0 : categories.length;
 
 function buildBoard() {
   const board = document.getElementById('board');
   if (!board) return;
   board.innerHTML = '';
 
-  categories.forEach((title) => {
+  categories.forEach((title, index) => {
     const heading = document.createElement('div');
     heading.className = 'category';
     heading.textContent = title;
+    heading.style.setProperty('--i', index);   // staggered entrance
     board.appendChild(heading);
   });
 
@@ -144,8 +377,18 @@ function buildBoard() {
       btn.className = 'value';
       btn.id = `btn-${r}-${c}`;
       btn.textContent = values[r];
+      btn.style.setProperty('--i', r * cols + c);   // staggered entrance
+      // Cells are divs, so make them reachable and operable from the keyboard.
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('tabindex', '0');
+      btn.setAttribute('aria-label', `${categories[c]}, ${values[r]} puntos`);
       btn.addEventListener('click', () => {
         openQuestion(r, c, btn);
+      });
+      btn.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        btn.click();
       });
       board.appendChild(btn);
     }
@@ -199,11 +442,111 @@ const finalCard = document.getElementById('finalCard');
 
 // ==================== TEAM DATA ====================
 const DEFAULT_TEAM_NAMES = ["Equipo Rojo","Equipo Azul","Equipo Verde","Equipo Amarillo","Equipo Morado"];
+// First five colours match the classic teams; the rest extend the palette for bigger groups.
+const TEAM_PALETTE = [
+  "#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#7c3aed",
+  "#ec4899", "#06b6d4", "#f97316", "#84cc16", "#6366f1",
+  "#14b8a6", "#d946ef"
+];
 const teamScores = [0,0,0,0,0];
-const teamColors = ["#ef4444","#3b82f6","#10b981","#f59e0b","#7c3aed"];
+const teamColors = [...TEAM_PALETTE.slice(0, 5)];
 const teamNames = [...DEFAULT_TEAM_NAMES];
+let teamCount = DEFAULT_TEAMS;
+
+function teamColorAt(index) {
+  return TEAM_PALETTE[index] || `hsl(${(index * 47) % 360} 70% 55%)`;
+}
+
+function defaultTeamName(index) {
+  if (getGameMode() === 'teams') return DEFAULT_TEAM_NAMES[index] || `Equipo ${index + 1}`;
+  return `Jugador ${index + 1}`;
+}
+
+const SCORE_ROWS = [[150,-75],[250,-125],[400,-200],[500,-250],[700,-350],[800,-400]];
+
+function teamCardHtml(index) {
+  const color = teamColorAt(index);
+  // Teams 0-4 get their name colour from CSS; extra players are coloured inline.
+  const nameStyle = index < 5 ? '' : ` style="color:${color}"`;
+  const scoreRows = SCORE_ROWS.map(([plus, minus]) => `
+                <div class="row-buttons">
+                  <button class="btn-small green" onclick="adjustScore(${index}, ${plus})">+${plus}</button>
+                  <button class="btn-small red" onclick="adjustScore(${index}, ${minus})">${minus}</button>
+                </div>`).join('');
+
+  return `
+          <div class="col-6 col-sm-4 col-md-4 col-lg team-col" id="team-col-${index}" style="--i:${index}">
+            <div class="d-flex flex-column h-100">
+              <div class="team-score-header" id="score-top-${index}">0 Pts</div>
+              <div class="team flex-grow-1 team--has-header" id="team-${index}">
+                <div class="team-name-row">
+                  <div class="team-name" id="team-name-${index}"${nameStyle}>${escapeHtml(teamNames[index] || defaultTeamName(index))}</div>
+                  <button class="rename-btn" onclick="startRename(${index})" aria-label="Renombrar equipo ${index}"><i class="bi bi-pencil-fill" aria-hidden="true"></i></button>
+                </div>
+                <div class="comodines">
+                  <button type="button" class="comodin verde" onclick="this.classList.toggle('used')" aria-label="Marcar comodín verde como usado">C</button>
+                  <button type="button" class="comodin rojo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín rojo como usado">C</button>
+                  <button type="button" class="comodin morado" onclick="this.classList.toggle('used')" aria-label="Marcar comodín morado como usado">C</button>
+                </div>
+                <div class="score-buttons">${scoreRows}
+                  <div class="reset-wrapper">
+                    <button class="btn-small reset" onclick="resetTeam(${index})">Reset</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+}
+
+function renderTeamCards() {
+  const container = document.getElementById('teamsContainer');
+  if (!container) return;
+
+  container.innerHTML = Array.from({ length: teamCount }, (_, i) => teamCardHtml(i)).join('');
+
+  container.classList.add('cards-entering');
+  clearTimeout(renderTeamCards._timer);
+  renderTeamCards._timer = setTimeout(
+    () => container.classList.remove('cards-entering'),
+    500 + teamCount * 55
+  );
+
+  container.querySelectorAll('.comodin').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(saveGameState, 0));
+  });
+
+  for (let i = 0; i < teamCount; i++) renderScore(i);
+  applyTeamNeonBorders();
+}
+
+// Resizes every per-team array and rebuilds the scoreboard cards.
+function setTeamCount(count) {
+  teamCount = Math.max(1, Math.min(MAX_PLAYERS, count));
+
+  for (let i = 0; i < teamCount; i++) {
+    if (typeof teamScores[i] !== 'number') teamScores[i] = 0;
+    if (!teamNames[i]) teamNames[i] = defaultTeamName(i);
+    teamColors[i] = teamColorAt(i);
+  }
+  teamScores.length = teamCount;
+  teamNames.length = teamCount;
+  teamColors.length = teamCount;
+
+  if (!Array.isArray(scoreHistory) || !scoreHistory.length || scoreHistory[0].length !== teamCount) {
+    scoreHistory = [new Array(teamCount).fill(0)];
+  }
+
+  renderTeamCards();
+}
 
 function persistTeamName(teamIndex, name) {
+  if (getGameMode() !== 'teams') {
+    const names = getCustomNames();
+    names[teamIndex] = name;
+    storeCustomNames(names);
+    return;
+  }
+
   const saved = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
   saved[teamIndex] = name;
   localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
@@ -216,19 +559,31 @@ function persistTeamName(teamIndex, name) {
 }
 
 function syncTeamNamesFromStorage(gameStateNames) {
+  const mode = getGameMode();
+
+  if (mode !== 'teams') {
+    const custom = getCustomNames();
+    for (let i = 0; i < teamCount; i++) {
+      teamNames[i] = custom[i] || gameStateNames?.[i] || defaultTeamName(i);
+      const el = document.getElementById(`team-name-${i}`);
+      if (el) el.textContent = teamNames[i];
+    }
+    return;
+  }
+
   const savedTeams = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
   const formedTeams = JSON.parse(sessionStorage.getItem('ruletaTeams') || '[]');
   const forceDefaults = Object.keys(savedTeams).length === 0 && formedTeams.length === 0;
 
-  for (let i = 0; i < teamNames.length; i++) {
+  for (let i = 0; i < teamCount; i++) {
     if (forceDefaults) {
-      teamNames[i] = DEFAULT_TEAM_NAMES[i];
+      teamNames[i] = defaultTeamName(i);
     } else if (savedTeams[i]) {
       teamNames[i] = savedTeams[i];
     } else if (gameStateNames?.[i]) {
       teamNames[i] = gameStateNames[i];
     } else {
-      teamNames[i] = DEFAULT_TEAM_NAMES[i];
+      teamNames[i] = defaultTeamName(i);
     }
     const el = document.getElementById(`team-name-${i}`);
     if (el) el.textContent = teamNames[i];
@@ -361,7 +716,7 @@ function hexToRgba(hex, alpha = 1) {
 }
 
 function adjustScore(teamIndex, delta) {
-  if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex > 4) return;
+  if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex >= teamCount) return;
   teamScores[teamIndex] += delta;
   renderScore(teamIndex);
   animateScoreChange(teamIndex, delta);
@@ -372,41 +727,8 @@ function adjustScore(teamIndex, delta) {
   saveGameState();
 }
 
-const scoreRowMap = {
-  150: [150, -75],
-  250: [250, -125],
-  400: [400, -200],
-  500: [500, -250],
-  700: [700, -350],
-  800: [800, -400],
-};
-
-function normalizeScoreButtons() {
-  document.querySelectorAll('.row-buttons').forEach((row) => {
-    const greenBtn = row.querySelector('button.btn-small.green');
-    const redBtn = row.querySelector('button.btn-small.red');
-    if (!greenBtn || !redBtn) return;
-
-    const greenValue = Number(greenBtn.textContent.replace(/[^0-9-]/g, ''));
-    const mapped = scoreRowMap[greenValue];
-    if (!mapped) return;
-
-    greenBtn.textContent = mapped[0] > 0 ? `+${mapped[0]}` : String(mapped[0]);
-    redBtn.textContent = mapped[1] > 0 ? `+${mapped[1]}` : String(mapped[1]);
-
-    const greenOnclick = greenBtn.getAttribute('onclick');
-    const redOnclick = redBtn.getAttribute('onclick');
-    if (greenOnclick) {
-      greenBtn.setAttribute('onclick', greenOnclick.replace(/adjustScore\((\d+),[+-]?\d+\)/, `adjustScore($1,${mapped[0]})`));
-    }
-    if (redOnclick) {
-      redBtn.setAttribute('onclick', redOnclick.replace(/adjustScore\((\d+),[+-]?\d+\)/, `adjustScore($1,${mapped[1]})`));
-    }
-  });
-}
-
 function resetTeam(teamIndex) {
-  if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex > 4) return;
+  if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex >= teamCount) return;
   teamScores[teamIndex] = 0;
   renderScore(teamIndex);
   saveGameState();
@@ -418,7 +740,7 @@ function resetAllScores() {
     renderScore(i);
   }
   categoryStats = {};
-  scoreHistory = [[0, 0, 0, 0, 0]];
+  scoreHistory = [new Array(teamCount).fill(0)];
   lastPlayedCategory = null;
   lastQuestionResolved = false;
   if (finalChart) { finalChart.destroy(); finalChart = null; }
@@ -638,6 +960,9 @@ function clearGameProgress() {
 function clearSavedGame() {
   clearGameProgress();
   sessionStorage.removeItem('ruletaTeams');
+  sessionStorage.removeItem(GAME_MODE_KEY);
+  sessionStorage.removeItem(TEAM_COUNT_KEY);
+  sessionStorage.removeItem(CUSTOM_NAMES_KEY);
   localStorage.removeItem('ruletaTeamNames');
 }
 
@@ -711,6 +1036,7 @@ function saveGameState() {
   });
 
   sessionStorage.setItem(GAME_STATE_KEY, JSON.stringify({
+    teamCount,
     teamScores: [...teamScores],
     teamNames: [...teamNames],
     assignedQuestionRefs,
@@ -739,6 +1065,9 @@ function restoreGameState() {
     return;
   }
 
+  const savedCount = Number(state.teamCount) || (Array.isArray(state.teamScores) ? state.teamScores.length : teamCount);
+  if (savedCount !== teamCount) setTeamCount(savedCount);
+
   if (Array.isArray(state.teamScores)) {
     state.teamScores.forEach((score, index) => {
       if (index < teamScores.length) teamScores[index] = Number(score) || 0;
@@ -759,7 +1088,7 @@ function restoreGameState() {
   cellStates = state.cellStates || {};
   audioPositions = state.audioPositions || {};
   categoryStats = state.categoryStats || {};
-  scoreHistory = Array.isArray(state.scoreHistory) && state.scoreHistory.length ? state.scoreHistory : [[0, 0, 0, 0, 0]];
+  scoreHistory = Array.isArray(state.scoreHistory) && state.scoreHistory.length ? state.scoreHistory : [new Array(teamCount).fill(0)];
   lastPlayedCategory = state.lastPlayedCategory || null;
   lastQuestionResolved = Boolean(state.lastQuestionResolved);
 
@@ -831,7 +1160,8 @@ function openQuestion(row, col, btnElement) {
       }
       if (audio) {
         audio.pause();
-        audio.src = '';
+        audio.removeAttribute('src');
+        audio.load();
       }
       showQuestionOverlay();
       return;
@@ -949,7 +1279,8 @@ function openQuestion(row, col, btnElement) {
 
     if (audio) {
       audio.pause();
-      audio.src = '';
+      audio.removeAttribute('src');
+      audio.load();
     }
 
     // Render options only for multiple-choice questions, not riddles.
@@ -967,7 +1298,7 @@ function openQuestion(row, col, btnElement) {
           const letters = ['A', 'B', 'C', 'D'];
           div.innerHTML = `
             <div class="option-letter ${letters[index]}">${letters[index]}</div>
-            <span class="option-text">${op}</span>
+            <span class="option-text">${escapeHtml(op)}</span>
           `;
         } else {
           div.innerText = op;
@@ -1157,7 +1488,8 @@ function closeOverlay() {
   if (audio) {
     audio.pause();
     audio.currentTime = 0;
-    audio.src = '';
+    audio.removeAttribute('src');
+    audio.load();
   }
   resetAudioControls();
   if (audioControlsWrap) {
@@ -1221,7 +1553,9 @@ function showFinalRanking() {
 
   winnerColorEl.style.background = winner.color;
   winnerColorEl.style.boxShadow = `0 0 40px ${hexToRgba(winner.color, 0.7)}, 0 0 80px ${hexToRgba(winner.color, 0.4)}, 0 10px 40px rgba(0,0,0,0.6)`;
-  winnerAnnouncementEl.innerText = `🏆 ¡${winner.name.toUpperCase()} GANA LA PARTIDA! 🏆`;
+  winnerAnnouncementEl.innerText = teamCount === 1
+    ? `🏆 ¡BIEN HECHO, ${winner.name.toUpperCase()}! 🏆`
+    : `🏆 ¡${winner.name.toUpperCase()} GANA LA PARTIDA! 🏆`;
   winnerScoreEl.innerText = `0 Pts`;
   finalCard.style.borderColor = winner.color;
   finalCard.style.boxShadow = `0 28px 100px rgba(0,0,0,0.85), 0 0 40px ${hexToRgba(winner.color, 0.18)}`;
@@ -1478,7 +1812,7 @@ function resetBoardAndScores() {
   categoryStats = {};
   lastPlayedCategory = null;
   lastQuestionResolved = false;
-  scoreHistory = [[0, 0, 0, 0, 0]];
+  scoreHistory = [new Array(teamCount).fill(0)];
   if (finalChart) { finalChart.destroy(); finalChart = null; }
   clearGameProgress();
 
@@ -1556,11 +1890,39 @@ function onConfettiResize() {
 
 document.addEventListener('DOMContentLoaded', () => {
   clearSavedGameOnReload();
-  normalizeScoreButtons();
   highlightActiveButton();
   buildBoard();
+  applyGameMode();
   restoreGameState();
   initIndexPage();
+  // Opening the panel needs the board and the cards already in place.
+  startGamePanelFromNavigation();
+
+  // Escape closes whatever is on top: ranking first, then the question overlay.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (finalOverlay?.style.display === 'flex') {
+      closeFinalOverlay();
+      return;
+    }
+    const questionOverlay = document.getElementById('overlay');
+    if (questionOverlay?.style.display === 'flex') closeOverlay();
+  });
+
+  document.getElementById('soloNameInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') startSoloGame();
+  });
+  document.getElementById('playersCountInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); confirmPlayersCount(); }
+  });
+  document.getElementById('playerNamesList')?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const inputs = [...document.querySelectorAll('#playerNamesList input')];
+    const next = inputs[inputs.indexOf(e.target) + 1];
+    if (next) next.focus();
+    else confirmPlayerNames();
+  });
   const rulesModal = document.getElementById('rulesModal');
   if (rulesModal) {
     rulesModal.addEventListener('click', (e) => {
@@ -1568,9 +1930,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     rulesModal.querySelector('.btn-close')?.addEventListener('click', closeRulesModal);
   }
-  document.querySelectorAll('.comodin').forEach(btn => {
-    btn.addEventListener('click', () => setTimeout(saveGameState, 0));
-  });
 });
 
 
@@ -1611,6 +1970,8 @@ function startRename(teamIndex) {
     newEl.className = 'team-name';
     newEl.id = `team-name-${teamIndex}`;
     newEl.textContent = newName;
+    // Teams 0-4 are coloured from CSS; extra players carry their colour inline.
+    if (teamIndex >= 5) newEl.style.color = teamColorAt(teamIndex);
     input.replaceWith(newEl);
     teamNames[teamIndex] = newName;
     persistTeamName(teamIndex, newName);
@@ -1639,4 +2000,13 @@ window.toggleEditMode = toggleEditMode;
 window.openRulesModal = openRulesModal;
 window.closeRulesModal = closeRulesModal;
 window.goToGamePanel = goToGamePanel;
+window.goToTeamsSetup = goToTeamsSetup;
+window.chooseSoloMode = chooseSoloMode;
+window.chooseTeamsMode = chooseTeamsMode;
+window.choosePlayersMode = choosePlayersMode;
+window.confirmPlayersCount = confirmPlayersCount;
+window.confirmPlayerNames = confirmPlayerNames;
+window.skipPlayerNames = skipPlayerNames;
+window.backToModeSelect = backToModeSelect;
+window.startSoloGame = startSoloGame;
 window.goToPortfolio = goToPortfolio;

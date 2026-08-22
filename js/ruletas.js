@@ -329,19 +329,36 @@ function initRuletasPage() {
 
   function syncTeams() { sessionStorage.setItem('ruletaTeams', JSON.stringify(teams)); }
 
-  const TEAM_COLORS      = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7'];
-  const TEAM_COLOR_NAMES = ['rojo',    'azul',    'verde',   'amarillo', 'morado'];
+  // First five keep the classic colours; the rest extend the palette for bigger groups.
+  const TEAM_COLORS      = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7',
+                            '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1',
+                            '#14b8a6', '#d946ef'];
+  const TEAM_COLOR_NAMES = ['rojo', 'azul', 'verde', 'amarillo', 'morado',
+                            'rosa', 'cian', 'naranja', 'lima', 'índigo',
+                            'turquesa', 'magenta'];
+
+  // Light backgrounds need dark label text.
+  const DARK_LABEL_TEAMS = new Set([4, 9]);
 
   function teamColor(teamNumber) {
-    return teamNumber <= TEAM_COLORS.length ? TEAM_COLORS[teamNumber - 1] : '#6b7280';
+    return TEAM_COLORS[teamNumber - 1] || '#6b7280';
   }
   function teamColorName(teamNumber) {
-    return teamNumber <= TEAM_COLOR_NAMES.length ? TEAM_COLOR_NAMES[teamNumber - 1] : 'neutro';
+    return TEAM_COLOR_NAMES[teamNumber - 1] || `${teamNumber}`;
   }
 
   function renderTeams() {
     if (!teamsListEl) return;
     teamsListEl.innerHTML = '';
+
+    if (!teams.length) {
+      const empty = document.createElement('div');
+      empty.className = 'teams-empty';
+      empty.textContent = 'Todavía no hay parejas. Gira las dos ruletas para formarlas.';
+      teamsListEl.appendChild(empty);
+      return;
+    }
+
     teams.forEach((team, i) => {
       const teamNum = i + 1;
       const color = teamColor(teamNum);
@@ -351,7 +368,7 @@ function initRuletasPage() {
       div.style.animationDelay = `${Math.min(i, 8) * 55}ms`;
       div.style.cssText = 'display:flex;align-items:center;gap:10px;padding:4px 0';
       div.innerHTML = `
-        <span style="background:${color};color:${teamNum === 4 ? '#000' : '#fff'};font-weight:700;padding:2px 10px;border-radius:99px;font-size:13px;white-space:nowrap;text-transform:capitalize;">Equipo ${colorName}</span>
+        <span style="background:${color};color:${DARK_LABEL_TEAMS.has(teamNum) ? '#000' : '#fff'};font-weight:700;padding:2px 10px;border-radius:99px;font-size:13px;white-space:nowrap;text-transform:capitalize;">Equipo ${colorName}</span>
         <span style="font-weight:700;flex:1">${escapeHtml(team)}</span>
         <button style="background:#ef4444;color:white;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Eliminar</button>
       `;
@@ -383,7 +400,6 @@ function initRuletasPage() {
   }
 
   function saveRuletaTeam(teamNumber, nameA, nameB) {
-    if (teamNumber > 5) return;
     const displayName = `${nameA} y ${nameB}`;
     const saved = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
     saved[teamNumber - 1] = displayName;
@@ -405,7 +421,7 @@ function initRuletasPage() {
     if (!popup || !label || !names) return;
 
     const color = teamColor(teamNumber);
-    const textCol = (teamNumber === 4 && teamNumber <= 5) ? '#000' : '#fff';
+    const textCol = DARK_LABEL_TEAMS.has(teamNumber) ? '#000' : '#fff';
     const card = popup.querySelector('.team-popup-card');
     if (card) {
       card.style.borderColor = color;

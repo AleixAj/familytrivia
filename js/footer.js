@@ -21,9 +21,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupCasinoButtons();
 
-  // Re-run when hidden containers become visible (e.g. gameContainer d-none removed)
-  new MutationObserver(() => setupCasinoButtons())
-    .observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+  // Re-run when hidden containers become visible (e.g. gameContainer d-none removed).
+  // The board toggles classes constantly, so coalesce into one check per frame and
+  // ignore mutations that cannot change a button's size.
+  let pendingCheck = null;
+  const scheduleCheck = () => {
+    if (pendingCheck !== null) return;
+    pendingCheck = requestAnimationFrame(() => {
+      pendingCheck = null;
+      setupCasinoButtons();
+    });
+  };
+
+  new MutationObserver(mutations => {
+    const relevant = mutations.some(m =>
+      m.target instanceof Element && !m.target.closest('.board, .scoreboard, #overlay, #finalOverlay')
+    );
+    if (relevant) scheduleCheck();
+  }).observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
 });
 
 const CASINO_CONFIGS = [
@@ -128,8 +143,10 @@ function buildCasinoBorder(btn, color1, color2) {
   btn.appendChild(svg);
 
   let last = null;
+  // Stop as soon as this SVG is replaced, otherwise every rebuild would leave
+  // an orphan animation loop running forever.
   (function animate(ts) {
-    if (!btn.isConnected) return;
+    if (!btn.isConnected || !svg.isConnected) return;
     if (last !== null) {
       const dt = ts - last;
       for (const d of dots) {

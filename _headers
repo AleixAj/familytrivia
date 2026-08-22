@@ -3,11 +3,16 @@
 
 /js/*
   Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=3600, must-revalidate
 
 /css/*
   Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=3600, must-revalidate
 
 /audios/*
   Accept-Ranges: bytes
   Content-Type: audio/mpeg
   Cache-Control: public, max-age=86400
+
+/img/*
+  Cache-Control: public, max-age=2592000

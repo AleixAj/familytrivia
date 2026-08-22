@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#1a1a1a" />
     <link rel="icon" href="img/Triviaicon.png" type="image/png" />
     <title>Ruletas – AJ Games</title>
     <meta name="description" content="Forma equipos al azar con las ruletas giratorias de AJ Games antes de empezar la partida." />
@@ -12,6 +13,9 @@
     <meta property="og:title" content="Ruletas – AJ Games" />
     <meta property="og:description" content="Forma equipos al azar con las ruletas giratorias de AJ Games antes de empezar la partida." />
     <meta property="og:image" content="img/ruletaTitle.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Russo+One&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
@@ -25,7 +29,7 @@
         <span class="nav-logo">ALEIX AJ</span>
       </button>
       <button class="nav-title-link" type="button" onclick="goTo('index.html')" aria-label="Ir a la página principal">
-        <img src="img/FamilyTriviaName.png" class="nav-title-logo" alt="Family Trivia" />
+        <img src="img/FamilyTriviaName.png" class="nav-title-logo" alt="Family Trivia" width="729" height="128" decoding="async" />
       </button>
       <button class="rules-nav-btn" type="button" onclick="openRulesModal()">
         <i class="bi bi-journal-text" aria-hidden="true"></i>
@@ -36,7 +40,13 @@
     <div class="wrap container-xl">
       <!-- Title -->
       <div class="text-center">
-        <img src="img/ruletaTitle.png" class="game-title-img game-title-img--lg" alt="Ruletas" />
+        <img src="img/ruletaTitle.png" class="game-title-img game-title-img--lg" alt="Ruletas" width="696" height="691" decoding="async" fetchpriority="high" />
+        <p class="ruletas-intro">
+          Escribe los nombres en las dos ruletas y pulsa <strong>Girar las dos a la vez</strong>:
+          cada tirada empareja a una persona de cada ruleta y la pareja baja a
+          <strong>Equipos Formados</strong>. Cuando estén todas, dale a <strong>¡Empezar!</strong>
+          y cada pareja tendrá su tarjeta de puntos.
+        </p>
       </div>
 
       <!-- Wheels grid -->
@@ -53,7 +63,7 @@
             </div>
 
             <div class="input-row d-flex gap-2">
-              <input class="form-control" id="inputA" placeholder="Introduce un nombre y pulsa Añadir" />
+              <input class="form-control" id="inputA" maxlength="20" autocomplete="off" placeholder="Introduce un nombre y pulsa Añadir" />
               <button id="addA"><i class="bi bi-plus-lg"></i> Añadir</button>
             </div>
 
@@ -77,7 +87,7 @@
             </div>
 
             <div class="input-row d-flex gap-2">
-              <input class="form-control" id="inputB" placeholder="Introduce un nombre y pulsa Añadir" />
+              <input class="form-control" id="inputB" maxlength="20" autocomplete="off" placeholder="Introduce un nombre y pulsa Añadir" />
               <button id="addB"><i class="bi bi-plus-lg"></i> Añadir</button>
             </div>
 
@@ -138,24 +148,34 @@
           </div>
           <div class="modal-body">
             <section class="rules-section">
-              <h3><i class="bi bi-people-fill"></i> Preparacion</h3>
-              <p>El juego esta pensado para jugar en familia con un presentador. Lo normal es empezar en las ruletas: por ejemplo, 5 jovenes en la Ruleta 1 y 5 mayores en la Ruleta 2 para formar parejas equilibradas.</p>
+              <h3><i class="bi bi-joystick"></i> Modos de juego</h3>
+              <ul>
+                <li><strong>Un jugador:</strong> escribes tu nombre y juegas solo, con una única tarjeta de puntos.</li>
+                <li><strong>Multijugador individual:</strong> dices cuántas personas sois (de 2 a 12) y el nombre de cada una. Cada persona tiene su propia tarjeta.</li>
+                <li><strong>Multijugador por parejas:</strong> las parejas se forman en las ruletas y cada pareja tiene una tarjeta con los dos nombres.</li>
+              </ul>
+            </section>
+
+            <section class="rules-section">
+              <h3><i class="bi bi-people-fill"></i> Preparación</h3>
+              <p>El juego está pensado para jugar en familia con un presentador. Para jugar por parejas se empieza en las ruletas: por ejemplo, los jóvenes en la Ruleta 1 y los mayores en la Ruleta 2, y cada tirada empareja a uno de cada lado.</p>
+              <p>Cuando estén todas las parejas en la tabla, se pulsa <strong>¡Empezar!</strong> y se crea una tarjeta por pareja.</p>
               <p>Cada equipo necesita papel o pizarra para escribir sus respuestas sin que el resto las vea.</p>
             </section>
 
             <section class="rules-section">
               <h3><i class="bi bi-grid-3x3-gap-fill"></i> Rondas</h3>
               <ul>
-                <li>El equipo al que le toca escoge una categoria y una puntuacion disponible.</li>
+                <li>El equipo al que le toca escoge una categoría y una puntuación disponible.</li>
                 <li>El presentador abre la pregunta en la pantalla.</li>
                 <li>Todos los equipos responden a la vez escribiendo su respuesta.</li>
                 <li>Cuando el presentador lo indique, todos muestran la respuesta al mismo tiempo.</li>
-                <li>La casilla abierta queda marcada y no se puede volver a escoger.</li>
+                <li>La casilla jugada queda marcada y ya no puntúa, aunque se puede volver a abrir para repasar la respuesta.</li>
               </ul>
             </section>
 
             <section class="rules-section">
-              <h3><i class="bi bi-plus-slash-minus"></i> Puntuacion</h3>
+              <h3><i class="bi bi-plus-slash-minus"></i> Puntuación</h3>
               <ul>
                 <li>Quien acierta suma el valor completo de la casilla.</li>
                 <li>Quien falla resta la mitad del valor.</li>
@@ -167,8 +187,8 @@
             <section class="rules-section">
               <h3><i class="bi bi-music-note-beamed"></i> Tipos de pregunta</h3>
               <ul>
-                <li>En preguntas con opciones, se escribe la opcion o respuesta correcta.</li>
-                <li>En Bandas sonoras y Disney, se apunta la pelicula, serie o cancion.</li>
+                <li>En preguntas con opciones, se escribe la opción o respuesta correcta.</li>
+                <li>En Bandas sonoras y Disney, se escucha el audio y se apunta la película, serie o canción.</li>
                 <li>En Adivinanzas, se escribe directamente la respuesta pensada.</li>
               </ul>
             </section>
@@ -178,23 +198,36 @@
               <ul class="rules-jokers">
                 <li><span class="joker-dot joker-green"></span><strong>Verde:</strong> antes de responder, el presentador enseña la pista solo a ese equipo.</li>
                 <li><span class="joker-dot joker-red"></span><strong>Rojo:</strong> antes de responder, si ese equipo falla no resta puntos.</li>
-                <li><span class="joker-dot joker-purple"></span><strong>Morado:</strong> el equipo puede leer las respuestas del resto antes de escribir la suya. Si se usa en una pregunta, ningun otro equipo puede usar el morado en esa misma pregunta.</li>
+                <li><span class="joker-dot joker-purple"></span><strong>Morado:</strong> el equipo puede leer las respuestas del resto antes de escribir la suya. Si se usa en una pregunta, ningún otro equipo puede usar el morado en esa misma pregunta.</li>
               </ul>
-              <p>Cuando un equipo usa un comodin, el presentador lo marca en el panel de puntuaciones.</p>
+              <p>Cada equipo tiene un comodín de cada color para toda la partida. Cuando uno lo usa, el presentador lo marca en su tarjeta.</p>
+            </section>
+
+            <section class="rules-section">
+              <h3><i class="bi bi-sliders"></i> Controles del presentador</h3>
+              <ul>
+                <li><strong>Pista:</strong> muestra u oculta la ayuda de la pregunta abierta.</li>
+                <li><strong>Cambiar pregunta:</strong> sustituye la pregunta por otra de la misma categoría y puntuación.</li>
+                <li><strong>Resolver</strong> (o <strong>Revelar película</strong> en las de audio): enseña la respuesta y marca la casilla como jugada.</li>
+                <li><strong>Modificar nombres:</strong> permite renombrar cualquier tarjeta durante la partida.</li>
+                <li><strong>Resetear puntuaciones:</strong> pone todos los marcadores a cero sin tocar el tablero.</li>
+                <li>La tecla <strong>Escape</strong> cierra la pregunta o el ranking.</li>
+              </ul>
+              <p>Cuidado: recargar la página (F5) empieza una partida nueva y borra puntos y casillas.</p>
             </section>
 
             <section class="rules-section">
               <h3><i class="bi bi-trophy-fill"></i> Fin de partida</h3>
-              <p>La partida termina cuando se han abierto todas las casillas del tablero. El presentador pulsa <strong>Finalizar partida</strong> para ver el ranking, el ganador y las estadisticas finales.</p>
+              <p>La partida termina cuando se han abierto todas las casillas del tablero. El presentador pulsa <strong>Finalizar partida</strong> para ver el ranking, el ganador y las estadísticas. Desde ahí también se puede <strong>reiniciar el tablero y las puntuaciones</strong> para jugar otra.</p>
             </section>
           </div>
         </div>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmwz+ysmXdQS32vBX8sMMd1bGvu7u" crossorigin="anonymous"></script>
-    <script src="js/script.js"></script>
-    <script src="js/ruletas.js"></script>
-    <script src="js/footer.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script defer src="js/script.js"></script>
+    <script defer src="js/ruletas.js"></script>
+    <script defer src="js/footer.js"></script>
   </body>
 </html>
