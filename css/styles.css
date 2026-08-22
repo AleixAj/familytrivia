@@ -2689,8 +2689,10 @@ html {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin: 4px auto 0;
-  padding: 8px 12px;
+  /* Breathe under the navbar; the negative bottom offsets the container gap
+     plus the board padding so the bar sits evenly between both. */
+  margin: 18px auto -6px;
+  padding: 8px 14px;
   width: fit-content;
   max-width: 100%;
   border-radius: 50px;
@@ -2860,4 +2862,5 @@ html {
 @media (max-width: 575.98px) {
   .award-list { grid-template-columns: 1fr; }
   .turn-label { font-size: 0.82rem; }
+  .turn-bar { margin: 12px auto -2px; }
 }

@@ -163,7 +163,7 @@ Hay dos formas de repartir puntos:
 
 Si se cambia la pregunta de una casilla donde ya se habian repartido puntos, esos puntos se devuelven automaticamente, porque esa pregunta deja de jugarse.
 
-El boton **Deshacer** (o `Ctrl+Z`) revierte el ultimo cambio de puntuacion, venga del reparto asistido o de los botones manuales, y tambien deshace la marca de acierto o fallo correspondiente.
+El boton **Deshacer turno** (o `Ctrl+Z`) revierte el ultimo cambio de puntuacion, venga del reparto asistido o de los botones manuales, y tambien deshace la marca de acierto o fallo correspondiente.
 
 ### Preguntas con opciones
 

@@ -790,7 +790,7 @@ function undoLastScore() {
 
   updateUndoButton();
   saveGameState();
-  showToast('Cambio deshecho', 'secondary');
+  showToast('Puntuación deshecha', 'secondary');
 }
 
 // ==================== ASSISTED SCORING ====================
