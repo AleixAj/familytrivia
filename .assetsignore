@@ -1,0 +1,12 @@
+# Archivos que no se publican en Cloudflare.
+# Sin esto, el despliegue intenta subir la carpeta .git y falla porque su
+# paquete de objetos supera el limite de 25 MiB por archivo.
+.git
+.git/**
+.gitignore
+.assetsignore
+.claude
+.claude/**
+.wrangler
+node_modules
+*.log

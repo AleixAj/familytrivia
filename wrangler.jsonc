@@ -1,0 +1,15 @@
+{
+  // Configuracion del despliegue en Cloudflare. Antes se generaba sola en cada
+  // build; fijarla aqui evita sorpresas y deja claro que se publica.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "familytrivia",
+  "compatibility_date": "2026-08-20",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    // El sitio es estatico: se publica la carpeta del repositorio,
+    // salvo lo listado en .assetsignore.
+    "directory": "."
+  }
+}
