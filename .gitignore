@@ -1,0 +1,11 @@
+# Configuracion local de herramientas (rutas propias de cada equipo)
+.claude/
+.vscode/
+.wrangler/
+
+# Dependencias y basura del sistema
+node_modules/
+*.log
+Thumbs.db
+desktop.ini
+.DS_Store
