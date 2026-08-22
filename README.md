@@ -161,6 +161,8 @@ Hay dos formas de repartir puntos:
 - **Repartir puntos** (dentro de la pregunta abierta): una fila por equipo con un boton de acierto y otro de fallo. Al marcarlos se aplica automaticamente el valor de la casilla, la mitad en negativo si falla, y nada si es una adivinanza. Volver a pulsar la misma marca la quita y devuelve los puntos, y cambiar de acierto a fallo recalcula la diferencia sin acumular. Es la via mas comoda cuando juegan muchos equipos.
 - **Botones de cada tarjeta**: suma o resta manual, para casos especiales o correcciones.
 
+Si se cambia la pregunta de una casilla donde ya se habian repartido puntos, esos puntos se devuelven automaticamente, porque esa pregunta deja de jugarse.
+
 El boton **Deshacer** (o `Ctrl+Z`) revierte el ultimo cambio de puntuacion, venga del reparto asistido o de los botones manuales, y tambien deshace la marca de acierto o fallo correspondiente.
 
 ### Preguntas con opciones

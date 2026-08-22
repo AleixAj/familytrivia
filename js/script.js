@@ -10,6 +10,20 @@ function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
 }
 
+// Stored values can be corrupted or unavailable (private mode, full quota):
+// never let that break the page load.
+function readStored(storage, key, fallback) {
+  try {
+    const raw = storage.getItem(key);
+    if (raw === null) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed ?? fallback;
+  } catch {
+    try { storage.removeItem(key); } catch {}
+    return fallback;
+  }
+}
+
 function showToast(message, type = 'warning') {
   let container = document.getElementById('ajToastContainer');
   if (!container) {
@@ -47,11 +61,8 @@ function goToGamePanel() {
   sessionStorage.setItem(GAME_MODE_KEY, 'teams');
 
   // One card per pair formed in the wheels; fall back to the classic five teams.
-  let pairs = [];
-  try {
-    const parsed = JSON.parse(sessionStorage.getItem('ruletaTeams') || '[]');
-    if (Array.isArray(parsed)) pairs = parsed.filter(Boolean);
-  } catch {}
+  const storedPairs = readStored(sessionStorage, 'ruletaTeams', []);
+  const pairs = Array.isArray(storedPairs) ? storedPairs.filter(Boolean) : [];
 
   let count = DEFAULT_TEAMS;
   if (pairs.length > MAX_PLAYERS) {
@@ -64,7 +75,7 @@ function goToGamePanel() {
   }
 
   // A different number of teams means the previous board no longer fits: start clean.
-  const savedCount = Number(JSON.parse(sessionStorage.getItem(GAME_STATE_KEY) || '{}').teamCount) || null;
+  const savedCount = Number(readStored(sessionStorage, GAME_STATE_KEY, {}).teamCount) || null;
   if (savedCount && savedCount !== count) clearGameProgress();
 
   sessionStorage.setItem(TEAM_COUNT_KEY, String(count));
@@ -143,12 +154,8 @@ function getStoredTeamCount() {
 
 // Names typed in solo/players setup; ruletas names live in their own storage.
 function getCustomNames() {
-  try {
-    const parsed = JSON.parse(sessionStorage.getItem(CUSTOM_NAMES_KEY) || '[]');
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  const parsed = readStored(sessionStorage, CUSTOM_NAMES_KEY, []);
+  return Array.isArray(parsed) ? parsed : [];
 }
 
 function storeCustomNames(names) {
@@ -548,11 +555,11 @@ function persistTeamName(teamIndex, name) {
     return;
   }
 
-  const saved = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
+  const saved = readStored(localStorage, 'ruletaTeamNames', {});
   saved[teamIndex] = name;
   localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
 
-  const teams = JSON.parse(sessionStorage.getItem('ruletaTeams') || '[]');
+  const teams = readStored(sessionStorage, 'ruletaTeams', []);
   if (teamIndex < teams.length) {
     teams[teamIndex] = name;
     sessionStorage.setItem('ruletaTeams', JSON.stringify(teams));
@@ -572,8 +579,8 @@ function syncTeamNamesFromStorage(gameStateNames) {
     return;
   }
 
-  const savedTeams = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
-  const formedTeams = JSON.parse(sessionStorage.getItem('ruletaTeams') || '[]');
+  const savedTeams = readStored(localStorage, 'ruletaTeamNames', {});
+  const formedTeams = readStored(sessionStorage, 'ruletaTeams', []);
   const forceDefaults = Object.keys(savedTeams).length === 0 && formedTeams.length === 0;
 
   for (let i = 0; i < teamCount; i++) {
@@ -761,6 +768,11 @@ function undoLastScore() {
   if (!entry) return;
 
   const { teamIndex, delta, statsCategory, award } = entry;
+  if (teamIndex >= teamCount) {
+    updateUndoButton();
+    return;
+  }
+
   teamScores[teamIndex] -= delta;
   renderScore(teamIndex);
   animateScoreChange(teamIndex, -delta);
@@ -855,6 +867,26 @@ function renderAwardPanel() {
   panel.classList.add('show');
 }
 
+// Undoes every award given for a cell, returning the points to their teams.
+// Used when the presenter swaps the question, since that cell starts over.
+function clearAwardsForCell(cellKey) {
+  const marks = awardedPoints[cellKey];
+  if (!marks) return;
+
+  const [row, col] = cellKey.split('-').map(Number);
+  const points = values[row];
+  const categoryName = categories[col];
+
+  Object.entries(marks).forEach(([index, state]) => {
+    const teamIndex = Number(index);
+    const delta = -awardDelta(state, points, categoryName);
+    if (delta && teamIndex < teamCount) adjustScore(teamIndex, delta, { skipUndo: true, statsCategory: categoryName });
+  });
+
+  delete awardedPoints[cellKey];
+  renderAwardPanel();
+}
+
 // ==================== TURN TRACKER ====================
 let currentTurn = 0;
 const turnAdvancedCells = new Set();
@@ -889,8 +921,13 @@ function prevTurn() { setTurn(currentTurn - 1); }
 
 function resetTeam(teamIndex) {
   if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex >= teamCount) return;
+  const previous = teamScores[teamIndex];
+  if (!previous) return;
+
   teamScores[teamIndex] = 0;
   renderScore(teamIndex);
+  animateScoreChange(teamIndex, -previous);
+  pushUndo({ teamIndex, delta: -previous, statsCategory: null, award: null });
   saveGameState();
 }
 
@@ -981,6 +1018,13 @@ function initIndexPage() {
     attachListeners();
     audio.addEventListener('timeupdate', updateProgressUI);
     audio.addEventListener('loadedmetadata', updateProgressUI);
+    // A missing or unplayable file would otherwise leave the presenter waiting.
+    audio.addEventListener('error', () => {
+      if (!audio.getAttribute('src')) return;
+      setQuestionStatus('No se ha podido cargar el audio de esta pregunta. Puedes cambiarla con el boton de recargar.');
+      playBtn.disabled = true;
+      pauseBtn.disabled = true;
+    });
     audio.addEventListener('ended', () => {
       playBtn.style.display = 'block';
       pauseBtn.style.display = 'none';
@@ -1099,7 +1143,9 @@ const assignedQuestions = {};   // key: "row-col" -> question object
 // Tracks revealed soundtrack answers for audio categories.
 const revealedAudioCells = new Set();   // keys: "row-col"
 // Persistent state for non-audio questions: visible explanation and selected option.
-let cellStates = {};   // key: "row-col" -> { explanationVisible: boolean, selectedOption: number|null }
+// key: "row-col" -> { resolved: boolean, explanationVisible: boolean, selectedOption: number|null }
+// resolved marks the cell as played; explanationVisible only tracks whether the answer is on screen.
+let cellStates = {};
 let audioPositions = {};  // key: "row-col" -> saved audio playback position in seconds
 let lastPlayedCategory = null;
 let lastQuestionResolved = false;
@@ -1136,6 +1182,13 @@ function clearSavedGameOnReload() {
 
 function isIndexGamePage() {
   return Boolean(document.getElementById('board') && document.getElementById('gameContainer'));
+}
+
+// A cell counts as played once it has been resolved or its soundtrack revealed,
+// even if the presenter hides the answer again afterwards.
+function isCellPlayed(cellKey) {
+  const state = cellStates[cellKey];
+  return Boolean(state?.resolved || state?.explanationVisible || revealedAudioCells.has(cellKey));
 }
 
 function getPoolKeyFromCell(cellKey) {
@@ -1199,7 +1252,7 @@ function saveGameState() {
     if (ref) assignedQuestionRefs[cellKey] = ref;
   });
 
-  sessionStorage.setItem(GAME_STATE_KEY, JSON.stringify({
+  const snapshot = JSON.stringify({
     teamCount,
     teamScores: [...teamScores],
     teamNames: [...teamNames],
@@ -1215,22 +1268,20 @@ function saveGameState() {
     lastPlayedCategory,
     lastQuestionResolved,
     usedComodines: getUsedComodinesState()
-  }));
+  });
+
+  try {
+    sessionStorage.setItem(GAME_STATE_KEY, snapshot);
+  } catch {
+    // Out of quota or storage blocked: the game keeps running in memory.
+  }
 }
 
 function restoreGameState() {
   if (!isIndexGamePage()) return;
 
-  const raw = sessionStorage.getItem(GAME_STATE_KEY);
-  if (!raw) return;
-
-  let state;
-  try {
-    state = JSON.parse(raw);
-  } catch {
-    sessionStorage.removeItem(GAME_STATE_KEY);
-    return;
-  }
+  const state = readStored(sessionStorage, GAME_STATE_KEY, null);
+  if (!state || typeof state !== 'object') return;
 
   const savedCount = Number(state.teamCount) || (Array.isArray(state.teamScores) ? state.teamScores.length : teamCount);
   if (savedCount !== teamCount) setTeamCount(savedCount);
@@ -1273,7 +1324,7 @@ function restoreGameState() {
   Object.keys(assignedQuestions).forEach(cellKey => {
     const btn = document.getElementById(`btn-${cellKey}`);
     if (!btn) return;
-    const isResolved = Boolean(cellStates[cellKey]?.explanationVisible || revealedAudioCells.has(cellKey));
+    const isResolved = isCellPlayed(cellKey);
     btn.classList.toggle('disabled', isResolved);
     if (isResolved) {
       btn.setAttribute('aria-disabled', 'true');
@@ -1479,7 +1530,7 @@ function openQuestion(row, col, btnElement) {
         }
 
         div.onclick = () => {
-          if (cellStates[cellKey]?.explanationVisible) return;
+          if (isCellPlayed(cellKey)) return;
           document.querySelectorAll('.option').forEach(o => {
             o.classList.remove('selected', 'incorrect', 'correct');
           });
@@ -1558,8 +1609,10 @@ function resolveQuestion() {
       opt.classList.remove('correct', 'incorrect');
     });
 
+    // Hiding is only visual: the cell stays played (it is greyed out on the board).
     if (cellStates[cellKey]) {
       cellStates[cellKey].explanationVisible = false;
+      cellStates[cellKey].resolved = true;
     }
 
     const resolveBtnText = document.getElementById('resolveBtnText');
@@ -1606,6 +1659,7 @@ function resolveQuestion() {
   // Persist the resolved state so reopening the modal is consistent.
   if (!cellStates[cellKey]) cellStates[cellKey] = {};
   cellStates[cellKey].explanationVisible = true;
+  cellStates[cellKey].resolved = true;
   cellStates[cellKey].selectedOption = selectedOption;
   lastQuestionResolved = true;
   saveGameState();
@@ -1624,6 +1678,8 @@ function changeCurrentQuestion() {
   // Clear all persisted UI state for this cell.
   delete cellStates[cellKey];
   delete audioPositions[cellKey];
+  clearAwardsForCell(cellKey);
+  turnAdvancedCells.delete(cellKey);
   
   // Audio cells also need their revealed-answer state cleared.
   if ((categoryName === 'Bandas sonoras' || categoryName === 'Disney') && revealedAudioCells) {
@@ -1713,7 +1769,7 @@ function closeOverlay() {
 
   // Pass the turn once per cell, only when it has actually been played.
   const closedCell = currentRow !== null && currentCol !== null ? `${currentRow}-${currentCol}` : null;
-  const played = closedCell && (cellStates[closedCell]?.explanationVisible || revealedAudioCells.has(closedCell));
+  const played = closedCell && isCellPlayed(closedCell);
   if (played && !turnAdvancedCells.has(closedCell) && teamCount > 1) {
     turnAdvancedCells.add(closedCell);
     setTurn(currentTurn + 1);

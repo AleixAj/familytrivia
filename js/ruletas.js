@@ -325,7 +325,8 @@ function initRuletasPage() {
     localStorage.removeItem('ruletaTeamNames');
   }
 
-  let teams = JSON.parse(sessionStorage.getItem('ruletaTeams') || '[]');
+  let teams = readStored(sessionStorage, 'ruletaTeams', []);
+  if (!Array.isArray(teams)) teams = [];
 
   function syncTeams() { sessionStorage.setItem('ruletaTeams', JSON.stringify(teams)); }
 
@@ -401,7 +402,7 @@ function initRuletasPage() {
 
   function saveRuletaTeam(teamNumber, nameA, nameB) {
     const displayName = `${nameA} y ${nameB}`;
-    const saved = JSON.parse(localStorage.getItem('ruletaTeamNames') || '{}');
+    const saved = readStored(localStorage, 'ruletaTeamNames', {});
     saved[teamNumber - 1] = displayName;
     localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
     const idx = teamNumber - 1;

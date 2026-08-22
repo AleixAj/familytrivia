@@ -2695,7 +2695,10 @@ html {
   max-width: 100%;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid color-mix(in srgb, var(--turn-color) 45%, transparent);
+  /* Plain values first so older browsers without color-mix still look right. */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-color: color-mix(in srgb, var(--turn-color) 45%, transparent);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   box-shadow: 0 0 18px color-mix(in srgb, var(--turn-color) 18%, transparent);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
