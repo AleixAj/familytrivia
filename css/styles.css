@@ -2681,3 +2681,180 @@ html {
   text-align: center;
   padding: 14px 8px;
 }
+
+/* ==================== TURN INDICATOR ==================== */
+.turn-bar {
+  --turn-color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 4px auto 0;
+  padding: 8px 12px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid color-mix(in srgb, var(--turn-color) 45%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--turn-color) 18%, transparent);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.turn-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.turn-name {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--turn-color);
+}
+
+.turn-nav {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.turn-nav:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.turn-nav:active {
+  transform: scale(0.92);
+}
+
+/* Card of the team whose turn it is. */
+.team-col.is-turn .team-score-header {
+  background: rgba(250, 204, 21, 0.14);
+}
+.team-col.is-turn .team {
+  outline: 2px solid rgba(250, 204, 21, 0.55);
+  outline-offset: 2px;
+}
+
+/* ==================== ASSISTED SCORING ==================== */
+.award-panel {
+  display: none;
+  margin: 14px 0 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  text-align: left;
+}
+.award-panel.show {
+  display: block;
+}
+
+.award-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.award-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #fff;
+}
+
+.award-values {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.award-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+}
+
+.award-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border-left: 3px solid var(--team-color, #fff);
+}
+
+.award-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.award-buttons {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.award-btn {
+  width: 30px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.award-btn:hover { background: rgba(255, 255, 255, 0.14); }
+.award-btn:active { transform: scale(0.92); }
+
+.award-btn.hit.active {
+  background: var(--btn-green);
+  border-color: var(--btn-green);
+  color: #062b14;
+}
+.award-btn.miss.active {
+  background: var(--btn-red);
+  border-color: var(--btn-red);
+  color: #fff;
+}
+
+/* ==================== UNDO BUTTON ==================== */
+.undo-btn {
+  padding: 9px 18px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.18s ease, opacity 0.18s ease;
+}
+.undo-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); }
+.undo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@media (max-width: 575.98px) {
+  .award-list { grid-template-columns: 1fr; }
+  .turn-label { font-size: 0.82rem; }
+}

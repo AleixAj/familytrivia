@@ -517,6 +517,7 @@ function renderTeamCards() {
 
   for (let i = 0; i < teamCount; i++) renderScore(i);
   applyTeamNeonBorders();
+  renderTurn();
 }
 
 // Resizes every per-team array and rebuilds the scoreboard cards.
@@ -715,17 +716,176 @@ function hexToRgba(hex, alpha = 1) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function adjustScore(teamIndex, delta) {
+function adjustScore(teamIndex, delta, undoEntry = {}) {
   if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex >= teamCount) return;
+  if (!delta) return;
+
   teamScores[teamIndex] += delta;
   renderScore(teamIndex);
   animateScoreChange(teamIndex, delta);
-  if (lastPlayedCategory && lastQuestionResolved) {
-    if (!categoryStats[lastPlayedCategory]) categoryStats[lastPlayedCategory] = {};
-    categoryStats[lastPlayedCategory][teamIndex] = (categoryStats[lastPlayedCategory][teamIndex] || 0) + delta;
+
+  // The assisted panel knows exactly which category the points belong to,
+  // even if the presenter hands them out before pressing Resolver.
+  let statsCategory = undoEntry.statsCategory || null;
+  if (!statsCategory && lastPlayedCategory && lastQuestionResolved) statsCategory = lastPlayedCategory;
+  if (statsCategory) {
+    if (!categoryStats[statsCategory]) categoryStats[statsCategory] = {};
+    categoryStats[statsCategory][teamIndex] = (categoryStats[statsCategory][teamIndex] || 0) + delta;
+  }
+
+  if (!undoEntry.skipUndo) {
+    pushUndo({ teamIndex, delta, statsCategory, award: undoEntry.award || null });
   }
   saveGameState();
 }
+
+// ==================== UNDO ====================
+const undoStack = [];
+const UNDO_LIMIT = 60;
+
+function pushUndo(entry) {
+  undoStack.push(entry);
+  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+  updateUndoButton();
+}
+
+function updateUndoButton() {
+  const btn = document.getElementById('undoBtn');
+  if (btn) btn.disabled = undoStack.length === 0;
+}
+
+// Reverts the last scoring change, whether it came from the manual buttons
+// or from the assisted panel (which also restores its tick/cross state).
+function undoLastScore() {
+  const entry = undoStack.pop();
+  if (!entry) return;
+
+  const { teamIndex, delta, statsCategory, award } = entry;
+  teamScores[teamIndex] -= delta;
+  renderScore(teamIndex);
+  animateScoreChange(teamIndex, -delta);
+
+  if (statsCategory && categoryStats[statsCategory]) {
+    categoryStats[statsCategory][teamIndex] = (categoryStats[statsCategory][teamIndex] || 0) - delta;
+  }
+
+  if (award) {
+    if (!awardedPoints[award.cellKey]) awardedPoints[award.cellKey] = {};
+    if (award.previous) awardedPoints[award.cellKey][teamIndex] = award.previous;
+    else delete awardedPoints[award.cellKey][teamIndex];
+    renderAwardPanel();
+  }
+
+  updateUndoButton();
+  saveGameState();
+  showToast('Cambio deshecho', 'secondary');
+}
+
+// ==================== ASSISTED SCORING ====================
+// awardedPoints[cellKey][teamIndex] = 'hit' | 'miss'
+let awardedPoints = {};
+
+function awardDelta(state, points, categoryName) {
+  if (state === 'hit') return points;
+  // Riddles never subtract points.
+  if (state === 'miss') return categoryName === 'Adivinanzas' ? 0 : -Math.round(points / 2);
+  return 0;
+}
+
+function setAward(teamIndex, result) {
+  if (currentRow === null || currentCol === null) return;
+
+  const cellKey = `${currentRow}-${currentCol}`;
+  const points = values[currentRow];
+  const categoryName = categories[currentCol];
+
+  if (!awardedPoints[cellKey]) awardedPoints[cellKey] = {};
+  const previous = awardedPoints[cellKey][teamIndex] || null;
+  const next = previous === result ? null : result;
+
+  const delta = awardDelta(next, points, categoryName) - awardDelta(previous, points, categoryName);
+
+  if (next) awardedPoints[cellKey][teamIndex] = next;
+  else delete awardedPoints[cellKey][teamIndex];
+
+  renderAwardPanel();
+
+  if (delta) adjustScore(teamIndex, delta, { award: { cellKey, previous }, statsCategory: categoryName });
+  else saveGameState();
+}
+
+function renderAwardPanel() {
+  const panel = document.getElementById('awardPanel');
+  const list = document.getElementById('awardList');
+  const valuesLabel = document.getElementById('awardValues');
+  if (!panel || !list) return;
+
+  if (currentRow === null || currentCol === null || !currentQuestion) {
+    panel.classList.remove('show');
+    list.innerHTML = '';
+    return;
+  }
+
+  const cellKey = `${currentRow}-${currentCol}`;
+  const points = values[currentRow];
+  const categoryName = categories[currentCol];
+  const miss = awardDelta('miss', points, categoryName);
+  const state = awardedPoints[cellKey] || {};
+
+  if (valuesLabel) {
+    valuesLabel.textContent = miss ? `acierto +${points} · fallo ${miss}` : `acierto +${points} · fallo 0`;
+  }
+
+  list.innerHTML = teamNames.map((name, i) => {
+    const mark = state[i] || '';
+    return `
+      <div class="award-row" style="--team-color:${teamColors[i]}">
+        <span class="award-name">${escapeHtml(name)}</span>
+        <div class="award-buttons">
+          <button type="button" class="award-btn hit ${mark === 'hit' ? 'active' : ''}"
+                  onclick="setAward(${i}, 'hit')" aria-pressed="${mark === 'hit'}"
+                  aria-label="Acierto de ${escapeHtml(name)}"><i class="bi bi-check-lg"></i></button>
+          <button type="button" class="award-btn miss ${mark === 'miss' ? 'active' : ''}"
+                  onclick="setAward(${i}, 'miss')" aria-pressed="${mark === 'miss'}"
+                  aria-label="Fallo de ${escapeHtml(name)}"><i class="bi bi-x-lg"></i></button>
+        </div>
+      </div>`;
+  }).join('');
+
+  panel.classList.add('show');
+}
+
+// ==================== TURN TRACKER ====================
+let currentTurn = 0;
+const turnAdvancedCells = new Set();
+
+function renderTurn() {
+  const bar = document.getElementById('turnBar');
+  const nameEl = document.getElementById('turnName');
+  if (!bar || !nameEl) return;
+
+  // A single player has no turns to pass.
+  bar.classList.toggle('d-none', teamCount < 2);
+  if (currentTurn >= teamCount) currentTurn = 0;
+
+  nameEl.textContent = teamNames[currentTurn] || '';
+  nameEl.style.color = teamColors[currentTurn] || '#fff';
+  bar.style.setProperty('--turn-color', teamColors[currentTurn] || 'var(--accent)');
+
+  for (let i = 0; i < teamCount; i++) {
+    document.getElementById(`team-col-${i}`)?.classList.toggle('is-turn', i === currentTurn && teamCount > 1);
+  }
+}
+
+function setTurn(index) {
+  if (teamCount < 1) return;
+  currentTurn = ((index % teamCount) + teamCount) % teamCount;
+  renderTurn();
+  saveGameState();
+}
+
+function nextTurn() { setTurn(currentTurn + 1); }
+function prevTurn() { setTurn(currentTurn - 1); }
 
 function resetTeam(teamIndex) {
   if (typeof teamIndex !== 'number' || teamIndex < 0 || teamIndex >= teamCount) return;
@@ -740,6 +900,10 @@ function resetAllScores() {
     renderScore(i);
   }
   categoryStats = {};
+  awardedPoints = {};
+  undoStack.length = 0;
+  updateUndoButton();
+  renderAwardPanel();
   scoreHistory = [new Array(teamCount).fill(0)];
   lastPlayedCategory = null;
   lastQuestionResolved = false;
@@ -1039,6 +1203,9 @@ function saveGameState() {
     teamCount,
     teamScores: [...teamScores],
     teamNames: [...teamNames],
+    awardedPoints,
+    currentTurn,
+    turnAdvancedCells: [...turnAdvancedCells],
     assignedQuestionRefs,
     revealedAudioCells: [...revealedAudioCells],
     cellStates,
@@ -1085,6 +1252,11 @@ function restoreGameState() {
   revealedAudioCells.clear();
   (state.revealedAudioCells || []).forEach(cellKey => revealedAudioCells.add(cellKey));
 
+  awardedPoints = state.awardedPoints || {};
+  currentTurn = Number(state.currentTurn) || 0;
+  turnAdvancedCells.clear();
+  (state.turnAdvancedCells || []).forEach(key => turnAdvancedCells.add(key));
+
   cellStates = state.cellStates || {};
   audioPositions = state.audioPositions || {};
   categoryStats = state.categoryStats || {};
@@ -1112,6 +1284,7 @@ function restoreGameState() {
 
   applyUsedComodinesState(state.usedComodines);
   applyTeamNeonBorders();
+  renderTurn();
 }
 
 // ==================== QUESTION LOGIC ====================
@@ -1163,6 +1336,7 @@ function openQuestion(row, col, btnElement) {
         audio.removeAttribute('src');
         audio.load();
       }
+      renderAwardPanel();
       showQuestionOverlay();
       return;
     }
@@ -1355,6 +1529,7 @@ function openQuestion(row, col, btnElement) {
     }
   }
 
+  renderAwardPanel();
   showQuestionOverlay();
 }
 
@@ -1535,6 +1710,18 @@ function closeOverlay() {
   if (hintText) hintText.innerHTML = '';
 
   audioControlsWrap.classList.remove('audio-question');
+
+  // Pass the turn once per cell, only when it has actually been played.
+  const closedCell = currentRow !== null && currentCol !== null ? `${currentRow}-${currentCol}` : null;
+  const played = closedCell && (cellStates[closedCell]?.explanationVisible || revealedAudioCells.has(closedCell));
+  if (played && !turnAdvancedCells.has(closedCell) && teamCount > 1) {
+    turnAdvancedCells.add(closedCell);
+    setTurn(currentTurn + 1);
+  }
+
+  currentRow = null;
+  currentCol = null;
+  renderAwardPanel();
   saveGameState();
 }
 
@@ -1804,6 +1991,11 @@ function resetBoardAndScores() {
 
   document.querySelectorAll('.comodin').forEach(c => c.classList.remove('used'));
   revealedAudioCells.clear();
+  awardedPoints = {};
+  turnAdvancedCells.clear();
+  setTurn(0);
+  undoStack.length = 0;
+  updateUndoButton();
   Object.keys(assignedQuestions).forEach(key => delete assignedQuestions[key]);
   
   cellStates = {};
@@ -1898,6 +2090,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Opening the panel needs the board and the cards already in place.
   startGamePanelFromNavigation();
 
+  // Ctrl+Z / Cmd+Z undoes the last scoring change.
+  document.addEventListener('keydown', (e) => {
+    const typing = e.target instanceof Element && e.target.matches('input, textarea');
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !typing) {
+      e.preventDefault();
+      undoLastScore();
+    }
+  });
+
   // Escape closes whatever is on top: ranking first, then the question overlay.
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
@@ -1975,6 +2176,8 @@ function startRename(teamIndex) {
     input.replaceWith(newEl);
     teamNames[teamIndex] = newName;
     persistTeamName(teamIndex, newName);
+    renderTurn();
+    renderAwardPanel();
     saveGameState();
   };
 
@@ -1996,6 +2199,10 @@ window.showFinalRanking = showFinalRanking;
 window.closeFinalOverlay = closeFinalOverlay;
 window.toggleFinalStats = toggleFinalStats;
 window.startRename = startRename;
+window.setAward = setAward;
+window.undoLastScore = undoLastScore;
+window.nextTurn = nextTurn;
+window.prevTurn = prevTurn;
 window.toggleEditMode = toggleEditMode;
 window.openRulesModal = openRulesModal;
 window.closeRulesModal = closeRulesModal;

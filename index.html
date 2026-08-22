@@ -82,6 +82,13 @@
     <!-- Game page -->
     <div class="container game-container d-none" id="gameContainer">
 
+      <!-- Turn indicator -->
+      <div class="turn-bar" id="turnBar">
+        <button class="turn-nav" type="button" onclick="prevTurn()" aria-label="Turno anterior"><i class="bi bi-chevron-left"></i></button>
+        <div class="turn-label">Turno de <span class="turn-name" id="turnName">—</span></div>
+        <button class="turn-nav" type="button" onclick="nextTurn()" aria-label="Pasar al siguiente turno"><i class="bi bi-chevron-right"></i></button>
+      </div>
+
       <!-- Board -->
       <div class="board-scroll">
         <div class="board" id="board"></div>
@@ -101,6 +108,7 @@
 
       <div class="d-flex justify-content-center align-items-center gap-3 my-3">
         <button class="edit-teams-btn" id="editTeamsBtn" onclick="toggleEditMode()"><i class="bi bi-pencil-fill me-1"></i>Modificar nombres</button>
+        <button class="undo-btn" id="undoBtn" onclick="undoLastScore()" disabled><i class="bi bi-arrow-counterclockwise me-1"></i>Deshacer</button>
         <button class="reset-btn" onclick="resetAllScores()">Resetear puntuaciones</button>
         <button class="finalize-btn" id="teamsRuletaBtn" onclick="goToTeamsSetup()"><i class="bi bi-people-fill me-1"></i>Editar equipos</button>
       </div>
@@ -165,6 +173,15 @@
           </div>
 
           <div id="hiddenAnswer" class="hidden-answer" aria-hidden="true"></div>
+        </div>
+
+        <!-- Assisted scoring -->
+        <div id="awardPanel" class="award-panel">
+          <div class="award-head">
+            <span class="award-title"><i class="bi bi-check2-square"></i> Repartir puntos</span>
+            <span class="award-values" id="awardValues"></span>
+          </div>
+          <div id="awardList" class="award-list"></div>
         </div>
 
         <div class="overlay-actions">
@@ -300,11 +317,13 @@
             <section class="rules-section">
               <h3><i class="bi bi-grid-3x3-gap-fill"></i> Rondas</h3>
               <ul>
+                <li>Arriba del tablero se ve de quién es el turno; el presentador puede pasarlo o corregirlo con las flechas.</li>
                 <li>El equipo al que le toca escoge una categoría y una puntuación disponible.</li>
                 <li>El presentador abre la pregunta en la pantalla.</li>
                 <li>Todos los equipos responden a la vez escribiendo su respuesta.</li>
                 <li>Cuando el presentador lo indique, todos muestran la respuesta al mismo tiempo.</li>
                 <li>La casilla jugada queda marcada y ya no puntúa, aunque se puede volver a abrir para repasar la respuesta.</li>
+                <li>Al cerrar una pregunta resuelta, el turno pasa solo al siguiente equipo.</li>
               </ul>
             </section>
 
@@ -314,7 +333,9 @@
                 <li>Quien acierta suma el valor completo de la casilla.</li>
                 <li>Quien falla resta la mitad del valor.</li>
                 <li>En Adivinanzas, fallar no resta puntos.</li>
-                <li>El presentador reparte los puntos manualmente desde el marcador.</li>
+                <li>Lo más rápido es usar <strong>Repartir puntos</strong> dentro de la pregunta: un ✓ o una ✗ por equipo aplican solos el valor de la casilla.</li>
+                <li>También se pueden sumar o restar puntos a mano desde los botones de cada tarjeta.</li>
+                <li>Si te equivocas, <strong>Deshacer</strong> (o Ctrl+Z) revierte el último cambio de puntos.</li>
               </ul>
             </section>
 
@@ -344,6 +365,8 @@
                 <li><strong>Cambiar pregunta:</strong> sustituye la pregunta por otra de la misma categoría y puntuación.</li>
                 <li><strong>Resolver</strong> (o <strong>Revelar película</strong> en las de audio): enseña la respuesta y marca la casilla como jugada.</li>
                 <li><strong>Modificar nombres:</strong> permite renombrar cualquier tarjeta durante la partida.</li>
+                <li><strong>Repartir puntos:</strong> marca acierto o fallo de cada equipo y suma o resta lo que toca. Volver a pulsar la misma marca la quita.</li>
+                <li><strong>Deshacer:</strong> revierte el último cambio de puntuación, venga del reparto o de los botones de la tarjeta.</li>
                 <li><strong>Resetear puntuaciones:</strong> pone todos los marcadores a cero sin tocar el tablero.</li>
                 <li>La tecla <strong>Escape</strong> cierra la pregunta o el ranking.</li>
               </ul>

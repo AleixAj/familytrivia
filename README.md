@@ -122,6 +122,10 @@ La dificultad aumenta segun el valor de la casilla:
 - 400 y 500: dificultad media.
 - 700 y 800: dificultad dificil.
 
+### Turnos
+
+Encima del tablero hay una barra que indica de que equipo es el turno, resaltando ademas su tarjeta en el marcador. El turno pasa solo al siguiente equipo cuando se cierra una pregunta ya resuelta, y el presentador puede corregirlo o saltarlo con las flechas. En el modo de un jugador la barra no aparece.
+
 ### Dinamica de ronda
 
 1. El equipo al que le toca escoge una categoria y una puntuacion disponible.
@@ -152,7 +156,12 @@ Regla general:
 - Cada equipo que falla resta la mitad del valor de la casilla.
 - En `Adivinanzas`, los fallos no restan puntos.
 
-La puntuacion se controla manualmente desde los botones de cada equipo para que el presentador pueda aplicar estas reglas con flexibilidad.
+Hay dos formas de repartir puntos:
+
+- **Repartir puntos** (dentro de la pregunta abierta): una fila por equipo con un boton de acierto y otro de fallo. Al marcarlos se aplica automaticamente el valor de la casilla, la mitad en negativo si falla, y nada si es una adivinanza. Volver a pulsar la misma marca la quita y devuelve los puntos, y cambiar de acierto a fallo recalcula la diferencia sin acumular. Es la via mas comoda cuando juegan muchos equipos.
+- **Botones de cada tarjeta**: suma o resta manual, para casos especiales o correcciones.
+
+El boton **Deshacer** (o `Ctrl+Z`) revierte el ultimo cambio de puntuacion, venga del reparto asistido o de los botones manuales, y tambien deshace la marca de acierto o fallo correspondiente.
 
 ### Preguntas con opciones
 
@@ -230,6 +239,7 @@ Si el presentador entra en `Editar equipos` desde una partida en curso, el juego
 - Casillas abiertas.
 - Preguntas asignadas.
 - Comodines usados.
+- Turno actual y aciertos o fallos ya marcados en cada casilla.
 - Estadisticas acumuladas para el ranking final.
 
 Si se cambia el numero de parejas o de jugadores, la partida empieza de cero porque el tablero anterior ya no encaja con las nuevas tarjetas.
