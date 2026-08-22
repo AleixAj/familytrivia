@@ -818,12 +818,15 @@ function awardDelta(state, points, categoryName) {
   return 0;
 }
 
-function setAward(teamIndex, result) {
-  if (currentRow === null || currentCol === null) return;
+// Cell currently being scored in the award overlay: { row, col, question, button }
+let awardCell = null;
 
-  const cellKey = `${currentRow}-${currentCol}`;
-  const points = values[currentRow];
-  const categoryName = categories[currentCol];
+function setAward(teamIndex, result) {
+  if (!awardCell) return;
+
+  const cellKey = `${awardCell.row}-${awardCell.col}`;
+  const points = values[awardCell.row];
+  const categoryName = categories[awardCell.col];
 
   if (!awardedPoints[cellKey]) awardedPoints[cellKey] = {};
   const previous = awardedPoints[cellKey][teamIndex] || null;
@@ -840,32 +843,55 @@ function setAward(teamIndex, result) {
   else saveGameState();
 }
 
-function renderAwardPanel() {
-  const panel = document.getElementById('awardPanel');
-  const list = document.getElementById('awardList');
-  const valuesLabel = document.getElementById('awardValues');
-  if (!panel || !list) return;
+// The correct answer, shown above the list so everyone sees who got it right.
+function getAnswerHtml(question, categoryName) {
+  if (!question) return '';
 
-  if (currentRow === null || currentCol === null || !currentQuestion) {
-    panel.classList.remove('show');
-    list.innerHTML = '';
-    return;
+  if (Array.isArray(question.opciones) && typeof question.correcta === 'number' && question.opciones[question.correcta] !== undefined) {
+    const letters = ['A', 'B', 'C', 'D'];
+    const letter = letters[question.correcta];
+    return `${letter ? `<span class="answer-letter answer-letter--${letter}">${letter}</span>` : ''}<span class="answer-text">${escapeHtml(question.opciones[question.correcta])}</span>`;
   }
 
-  const cellKey = `${currentRow}-${currentCol}`;
-  const points = values[currentRow];
-  const categoryName = categories[currentCol];
+  if (question.trackName) {
+    // trackName holds the title, a blank line and then the explanation.
+    const title = question.trackName.split('\n\n')[0];
+    return `<span class="answer-text">${escapeHtml(title)}</span>`;
+  }
+
+  if (question.explicacion) return `<span class="answer-text">${escapeHtml(question.explicacion)}</span>`;
+  return '';
+}
+
+function renderAwardPanel() {
+  const list = document.getElementById('awardList');
+  if (!list || !awardCell) return;
+
+  const cellKey = `${awardCell.row}-${awardCell.col}`;
+  const points = values[awardCell.row];
+  const categoryName = categories[awardCell.col];
   const miss = awardDelta('miss', points, categoryName);
   const state = awardedPoints[cellKey] || {};
 
+  const valuesLabel = document.getElementById('awardValues');
   if (valuesLabel) {
     valuesLabel.textContent = miss ? `acierto +${points} · fallo ${miss}` : `acierto +${points} · fallo 0`;
+  }
+
+  const info = document.getElementById('awardQuestionInfo');
+  if (info) info.textContent = `${categoryName} - ${points} Puntos`;
+
+  const answer = document.getElementById('awardAnswer');
+  if (answer) {
+    const html = getAnswerHtml(awardCell.question, categoryName);
+    answer.innerHTML = html ? `<span class="answer-label">Respuesta correcta</span>${html}` : '';
+    answer.classList.toggle('d-none', !html);
   }
 
   list.innerHTML = teamNames.map((name, i) => {
     const mark = state[i] || '';
     return `
-      <div class="award-row" style="--team-color:${teamColors[i]}">
+      <div class="award-row ${mark ? 'is-marked' : ''}" style="--team-color:${teamColors[i]}">
         <span class="award-name">${escapeHtml(name)}</span>
         <div class="award-buttons">
           <button type="button" class="award-btn hit ${mark === 'hit' ? 'active' : ''}"
@@ -877,8 +903,71 @@ function renderAwardPanel() {
         </div>
       </div>`;
   }).join('');
+}
 
-  panel.classList.add('show');
+function isAwardOverlayOpen() {
+  return document.getElementById('awardOverlay')?.style.display === 'flex';
+}
+
+function openAwardOverlay(row, col, question, button) {
+  const overlay = document.getElementById('awardOverlay');
+  if (!overlay || !question) return;
+
+  awardCell = { row, col, question, button };
+
+  // Reaching the scoring screen means the round for that cell is over:
+  // the answer is shown here, so the cell is marked as played.
+  const cellKey = `${row}-${col}`;
+  if (!cellStates[cellKey]) cellStates[cellKey] = {};
+  cellStates[cellKey].resolved = true;
+  const cellButton = button || document.getElementById(`btn-${row}-${col}`);
+  if (cellButton && !cellButton.classList.contains('disabled')) {
+    cellButton.classList.add('disabled', 'cell-used-pop');
+    cellButton.setAttribute('aria-disabled', 'true');
+    cellButton.addEventListener('animationend', () => cellButton.classList.remove('cell-used-pop'), { once: true });
+  }
+  renderBoardProgress();
+
+  renderAwardPanel();
+
+  overlay.style.display = 'flex';
+  overlay.setAttribute('aria-hidden', 'false');
+  overlay.classList.remove('award-overlay-open');
+  requestAnimationFrame(() => overlay.classList.add('award-overlay-open'));
+}
+
+function closeAwardOverlay() {
+  const overlay = document.getElementById('awardOverlay');
+  if (overlay) {
+    overlay.classList.remove('award-overlay-open');
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+
+  // The round ends here: pass the turn once per played cell.
+  const cellKey = awardCell ? `${awardCell.row}-${awardCell.col}` : null;
+  if (cellKey && isCellPlayed(cellKey) && !turnAdvancedCells.has(cellKey) && teamCount > 1) {
+    turnAdvancedCells.add(cellKey);
+    setTurn(currentTurn + 1);
+  }
+
+  awardCell = null;
+  checkBoardFinished();
+  saveGameState();
+}
+
+// Go back to the question from the scoring screen.
+function reopenQuestionFromAward() {
+  if (!awardCell) return;
+  const { row, col, button } = awardCell;
+  const overlay = document.getElementById('awardOverlay');
+  if (overlay) {
+    overlay.classList.remove('award-overlay-open');
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+  awardCell = null;
+  openQuestion(row, col, button || document.getElementById(`btn-${row}-${col}`));
 }
 
 // Undoes every award given for a cell, returning the points to their teams.
@@ -1151,6 +1240,10 @@ function initIndexPage() {
   if (document.getElementById('overlay')) {
     document.getElementById('overlay').addEventListener('click', (e) => {
       if (e.target.id === 'overlay') closeOverlay();
+    });
+
+    document.getElementById('awardOverlay')?.addEventListener('click', (e) => {
+      if (e.target.id === 'awardOverlay') closeAwardOverlay();
     });
   }
 
@@ -1484,7 +1577,6 @@ function openQuestion(row, col, btnElement) {
         audio.removeAttribute('src');
         audio.load();
       }
-      renderAwardPanel();
       showQuestionOverlay();
       return;
     }
@@ -1677,7 +1769,6 @@ function openQuestion(row, col, btnElement) {
     }
   }
 
-  renderAwardPanel();
   showQuestionOverlay();
 }
 
@@ -1803,15 +1894,16 @@ function changeCurrentQuestion() {
     explanationEl.setAttribute('aria-hidden', 'true');
   }
 
-  // Reopen the same cell with a fresh question.
+  // Reopen the same cell with a fresh question (no scoring screen in between).
   openQuestion(currentRow, currentCol, currentButton);
   saveGameState();
 }
 
-function closeOverlay() {
+function closeOverlay(skipAward = false) {
   if (audio && currentRow !== null && currentCol !== null && audio.currentTime > 0 && !isNaN(audio.currentTime)) {
     audioPositions[`${currentRow}-${currentCol}`] = audio.currentTime;
   }
+  const closedQuestion = currentQuestion;
   currentQuestion = null;
   if (audio) {
     audio.pause();
@@ -1864,19 +1956,21 @@ function closeOverlay() {
 
   audioControlsWrap.classList.remove('audio-question');
 
-  // Pass the turn once per cell, only when it has actually been played.
-  const closedCell = currentRow !== null && currentCol !== null ? `${currentRow}-${currentCol}` : null;
-  const played = closedCell && isCellPlayed(closedCell);
-  if (played && !turnAdvancedCells.has(closedCell) && teamCount > 1) {
-    turnAdvancedCells.add(closedCell);
-    setTurn(currentTurn + 1);
-  }
+  // Closing the question opens the scoring screen for that cell.
+  const row = currentRow;
+  const col = currentCol;
+  const question = closedQuestion;
+  const button = currentButton;
 
   currentRow = null;
   currentCol = null;
-  renderAwardPanel();
-  checkBoardFinished();
   saveGameState();
+
+  if (!skipAward && row !== null && col !== null && question) {
+    openAwardOverlay(row, col, question, button);
+  } else {
+    checkBoardFinished();
+  }
 }
 
 function showFinalRanking() {
@@ -2142,6 +2236,7 @@ function resetBoardAndScores() {
   resetAllScores();
   applyTeamNeonBorders();
   closeFinalOverlay();
+  if (isAwardOverlayOpen()) closeAwardOverlay();
 
   document.querySelectorAll('.comodin').forEach(c => c.classList.remove('used'));
   revealedAudioCells.clear();
@@ -2280,6 +2375,10 @@ document.addEventListener('DOMContentLoaded', () => {
       closeFinalOverlay();
       return;
     }
+    if (isAwardOverlayOpen()) {
+      closeAwardOverlay();
+      return;
+    }
     const questionOverlay = document.getElementById('overlay');
     if (questionOverlay?.style.display === 'flex') closeOverlay();
   });
@@ -2374,6 +2473,8 @@ window.closeFinalOverlay = closeFinalOverlay;
 window.toggleFinalStats = toggleFinalStats;
 window.startRename = startRename;
 window.setAward = setAward;
+window.closeAwardOverlay = closeAwardOverlay;
+window.reopenQuestionFromAward = reopenQuestionFromAward;
 window.undoLastScore = undoLastScore;
 window.nextTurn = nextTurn;
 window.prevTurn = prevTurn;

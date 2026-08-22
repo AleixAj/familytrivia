@@ -139,7 +139,8 @@ Encima del tablero hay una barra que indica de que equipo es el turno, resaltand
 5. Cuando el presentador lo indique, todos giran o muestran sus respuestas a la vez.
 6. El presentador pulsa `Resolver` para mostrar la respuesta correcta o la explicacion.
 7. El presentador suma o resta los puntos correspondientes a cada equipo.
-8. La casilla queda marcada como usada y ya no puntua, aunque se puede volver a abrir para repasar la respuesta.
+8. Al cerrar la pregunta se abre la pantalla de reparto con la respuesta correcta y los equipos.
+9. La casilla queda marcada como usada y ya no puntua, aunque se puede volver a abrir para repasar la respuesta.
 
 La ventaja del equipo que tiene el turno es elegir la casilla. La pregunta, sin embargo, la responden todos los equipos.
 
@@ -162,7 +163,7 @@ Regla general:
 
 Hay dos formas de repartir puntos:
 
-- **Repartir puntos** (dentro de la pregunta abierta): una fila por equipo con un boton de acierto y otro de fallo. Al marcarlos se aplica automaticamente el valor de la casilla, la mitad en negativo si falla, y nada si es una adivinanza. Volver a pulsar la misma marca la quita y devuelve los puntos, y cambiar de acierto a fallo recalcula la diferencia sin acumular. Es la via mas comoda cuando juegan muchos equipos.
+- **Pantalla de reparto** (se abre al cerrar la pregunta): muestra arriba la respuesta correcta, con su letra y su texto, y debajo una fila por equipo con un boton grande de acierto y otro de fallo, pensados para pulsar en tablet. Al marcarlos se aplica automaticamente el valor de la casilla, la mitad en negativo si falla, y nada si es una adivinanza. Volver a pulsar la misma marca la quita y devuelve los puntos, y cambiar de acierto a fallo recalcula la diferencia sin acumular. `Ver la pregunta` vuelve al enunciado y `Listo` cierra la ronda y pasa el turno.
 - **Botones de cada tarjeta**: suma o resta manual, para casos especiales o correcciones.
 
 Si se cambia la pregunta de una casilla donde ya se habian repartido puntos, esos puntos se devuelven automaticamente, porque esa pregunta deja de jugarse.
