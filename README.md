@@ -68,8 +68,8 @@ Al terminar todo el tablero, se muestra un ranking final con el equipo ganador, 
 Al abrir el juego se elige uno de los tres modos:
 
 - **Un jugador**: se pide el nombre y se juega solo, con una unica tarjeta de puntuacion.
-- **Multijugador individual**: se indica cuantas personas juegan (de 2 a 12) y el nombre de cada una. Cada persona tiene su propia tarjeta.
-- **Multijugador por parejas**: lleva a `ruletas.html`, donde se forman las parejas. Cada pareja se convierte en una tarjeta con los dos nombres.
+- **Multijugador individual**: se indica cuantas personas juegan (de 2 a 15) y el nombre de cada una. Cada persona tiene su propia tarjeta.
+- **Multijugador por parejas**: lleva a `ruletas.html`, donde se forman las parejas. Cada pareja se convierte en una tarjeta con los dos nombres, hasta 15 parejas (30 personas).
 
 En todos los modos las tarjetas del marcador se generan segun el numero real de participantes: hasta cinco por fila en escritorio, y las siguientes pasan a la fila de abajo.
 
@@ -88,8 +88,8 @@ Asi cada equipo combina conocimientos distintos y puede apoyarse mejor en pregun
 
 ### Equipos
 
-- Pueden jugar hasta 12 equipos o jugadores.
-- Los cinco primeros mantienen los colores clasicos (Rojo, Azul, Verde, Amarillo y Morado) y a partir del sexto se usan rosa, cian, naranja, lima, indigo, turquesa y magenta.
+- Pueden jugar hasta 15 equipos o jugadores, tres filas de cinco tarjetas en escritorio.
+- Los cinco primeros mantienen los colores clasicos (Rojo, Azul, Verde, Amarillo y Morado) y a partir del sexto se usan rosa, cian, naranja, lima, indigo, turquesa, magenta, cielo, coral y menta.
 - Sin nombres propios, las tarjetas se llaman `Jugador 1`, `Jugador 2`... en modo individual, y `Equipo Rojo`, `Equipo Azul`... en modo por parejas.
 - Los nombres se pueden cambiar en cualquier momento desde el marcador usando el boton de editar.
 - Si los equipos se forman desde `ruletas.html`, los nombres generados se trasladan automaticamente al tablero principal.

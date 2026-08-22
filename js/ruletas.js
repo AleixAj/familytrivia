@@ -332,13 +332,13 @@ function initRuletasPage() {
   // First five keep the classic colours; the rest extend the palette for bigger groups.
   const TEAM_COLORS      = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7',
                             '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1',
-                            '#14b8a6', '#d946ef'];
+                            '#14b8a6', '#d946ef', '#38bdf8', '#fb7185', '#4ade80'];
   const TEAM_COLOR_NAMES = ['rojo', 'azul', 'verde', 'amarillo', 'morado',
                             'rosa', 'cian', 'naranja', 'lima', 'índigo',
-                            'turquesa', 'magenta'];
+                            'turquesa', 'magenta', 'cielo', 'coral', 'menta'];
 
   // Light backgrounds need dark label text.
-  const DARK_LABEL_TEAMS = new Set([4, 9]);
+  const DARK_LABEL_TEAMS = new Set([4, 9, 13, 15]);
 
   function teamColor(teamNumber) {
     return TEAM_COLORS[teamNumber - 1] || '#6b7280';

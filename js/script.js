@@ -129,7 +129,7 @@ const TEAM_COUNT_KEY = 'familyTriviaTeamCount';
 const CUSTOM_NAMES_KEY = 'familyTriviaNames';
 const DEFAULT_TEAMS = 5;
 const MIN_PLAYERS = 2;
-const MAX_PLAYERS = 12;
+const MAX_PLAYERS = 15;   // 3 filas de 5 tarjetas
 
 function getGameMode() {
   const mode = sessionStorage.getItem(GAME_MODE_KEY);
@@ -446,7 +446,7 @@ const DEFAULT_TEAM_NAMES = ["Equipo Rojo","Equipo Azul","Equipo Verde","Equipo A
 const TEAM_PALETTE = [
   "#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#7c3aed",
   "#ec4899", "#06b6d4", "#f97316", "#84cc16", "#6366f1",
-  "#14b8a6", "#d946ef"
+  "#14b8a6", "#d946ef", "#38bdf8", "#fb7185", "#4ade80"
 ];
 const teamScores = [0,0,0,0,0];
 const teamColors = [...TEAM_PALETTE.slice(0, 5)];
