@@ -299,6 +299,7 @@ FamilyProject/
 │   ├── bootstrap-icons/
 │   ├── chart/
 │   └── fonts/
+├── sw.js
 ├── img/
 └── audios/
 ```
@@ -326,7 +327,11 @@ El archivo `index.html` carga primero `js/questions.js` y despues `js/script.js`
 
 ## Funciona sin conexion
 
-Todas las librerias estan servidas desde el propio proyecto, en `vendor/`: Bootstrap, Bootstrap Icons (con sus fuentes), Chart.js y las tipografias Poppins y Russo One (subconjuntos latin y latin-ext). La pagina no hace ninguna peticion a servidores externos, asi que el juego se ve y funciona igual sin internet, algo util en una casa rural con mala cobertura.
+Todas las librerias estan servidas desde el propio proyecto, en `vendor/`: Bootstrap, Bootstrap Icons (con sus fuentes), Chart.js y las tipografias Poppins y Russo One (subconjuntos latin y latin-ext). La pagina no hace ninguna peticion a servidores externos.
+
+Ademas, `sw.js` guarda el juego en el navegador la primera vez que se abre, asi que despues se puede jugar aunque no haya conexion: tablero, preguntas, marcador, ruletas y estadisticas. Lo unico que necesita red son los audios de `Bandas sonoras` y `Disney`, que pesan demasiado para guardarlos; si no cargan, el juego avisa y se puede cambiar de pregunta.
+
+Las paginas se piden siempre a la red primero y solo se sirven desde la copia guardada si no hay conexion, de modo que los cambios publicados llegan igual. Al publicar una actualizacion conviene subir el numero de version de `CACHE` en `sw.js` para que todos los dispositivos descarten la copia anterior.
 
 ## Notas
 

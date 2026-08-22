@@ -4,6 +4,13 @@
 // aligned when responsive or hidden layouts change size.
 // ============================================================
 
+// Cache the game so it still opens without connection (audios stay online-only).
+if ('serviceWorker' in navigator && window.isSecureContext) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const footer = document.createElement('footer');
   footer.className = 'page-footer';

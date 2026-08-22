@@ -933,7 +933,10 @@ function openAwardOverlay(row, col, question, button) {
   overlay.style.display = 'flex';
   overlay.setAttribute('aria-hidden', 'false');
   overlay.classList.remove('award-overlay-open');
-  requestAnimationFrame(() => overlay.classList.add('award-overlay-open'));
+  requestAnimationFrame(() => {
+    overlay.classList.add('award-overlay-open');
+    overlay.querySelector('.award-btn')?.focus({ preventScroll: true });
+  });
 }
 
 function closeAwardOverlay() {
@@ -950,6 +953,10 @@ function closeAwardOverlay() {
     turnAdvancedCells.add(cellKey);
     setTurn(currentTurn + 1);
   }
+
+  // Give the focus back to the board cell that was just played.
+  const cellButton = awardCell?.button || (cellKey ? document.getElementById(`btn-${cellKey}`) : null);
+  cellButton?.focus({ preventScroll: true });
 
   awardCell = null;
   checkBoardFinished();
@@ -1013,12 +1020,17 @@ function renderTurn() {
 }
 
 // Board progress: how many cells have been played out of the whole board.
+let boardFinishedNotified = false;
+
 function renderBoardProgress() {
   const el = document.getElementById('boardProgress');
-  if (!el) return;
+  if (!el) return null;
 
   const total = values.length * cols;
-  const played = Object.keys(cellStates).filter(isCellPlayed).length + [...revealedAudioCells].filter(key => !cellStates[key]).length;
+  // One entry per cell, no matter whether it was tracked as a state or as revealed audio.
+  const cells = new Set([...Object.keys(cellStates), ...revealedAudioCells]);
+  const played = [...cells].filter(isCellPlayed).length;
+
   el.textContent = `${played}/${total}`;
   el.classList.toggle('is-complete', played >= total);
 
@@ -1032,8 +1044,6 @@ function checkBoardFinished() {
   boardFinishedNotified = true;
   showToast('Se han jugado todas las casillas: ya podéis finalizar la partida', 'success');
 }
-
-let boardFinishedNotified = false;
 
 function setTurn(index) {
   if (teamCount < 1) return;
