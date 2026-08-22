@@ -173,28 +173,45 @@ function applyGameMode(mode = getGameMode()) {
 }
 
 // ==================== SETUP MODALS ====================
-function openSetupModal(id) {
+// Bootstrap moves the focus to the dialog itself while it opens, so focusing a
+// field beforehand makes it flash and lose focus. Do it on 'shown' instead.
+function openSetupModal(id, focusSelector) {
   const el = document.getElementById(id);
   if (!el) return;
+
+  const focusField = () => {
+    const field = focusSelector ? el.querySelector(focusSelector) : null;
+    if (!field) return;
+    field.focus();
+    if (typeof field.select === 'function') field.select();
+  };
+
   if (window.bootstrap?.Modal) {
+    el.addEventListener('shown.bs.modal', focusField, { once: true });
     bootstrap.Modal.getOrCreateInstance(el).show();
     return;
   }
+
   el.classList.add('show');
   el.style.display = 'block';
   el.removeAttribute('aria-hidden');
+  focusField();
 }
 
-function closeSetupModal(id) {
+function closeSetupModal(id, onHidden) {
   const el = document.getElementById(id);
   if (!el) return;
+
   if (window.bootstrap?.Modal) {
+    if (onHidden) el.addEventListener('hidden.bs.modal', onHidden, { once: true });
     bootstrap.Modal.getOrCreateInstance(el).hide();
     return;
   }
+
   el.classList.remove('show');
   el.style.display = 'none';
   el.setAttribute('aria-hidden', 'true');
+  onHidden?.();
 }
 
 // ---- Un jugador ----
@@ -229,8 +246,7 @@ function startSoloGame() {
 function choosePlayersMode() {
   const input = document.getElementById('playersCountInput');
   if (input) input.value = String(getStoredTeamCount() || 4);
-  openSetupModal('playersCountModal');
-  setTimeout(() => input?.focus(), 350);
+  openSetupModal('playersCountModal', '#playersCountInput');
 }
 
 function confirmPlayersCount() {
@@ -243,11 +259,8 @@ function confirmPlayersCount() {
   }
 
   buildPlayerNameInputs(count);
-  closeSetupModal('playersCountModal');
-  setTimeout(() => {
-    openSetupModal('playerNamesModal');
-    setTimeout(() => document.querySelector('#playerNamesList input')?.focus(), 350);
-  }, 260);
+  // Chain on 'hidden' so the second dialog opens with a clean backdrop and keeps its focus.
+  closeSetupModal('playersCountModal', () => openSetupModal('playerNamesModal', '#playerNamesList input'));
 }
 
 function buildPlayerNameInputs(count) {
