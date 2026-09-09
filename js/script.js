@@ -504,9 +504,9 @@ function teamCardHtml(index) {
                   <button class="rename-btn" onclick="startRename(${index})" aria-label="Renombrar equipo ${index}"><i class="bi bi-pencil-fill" aria-hidden="true"></i></button>
                 </div>
                 <div class="comodines">
-                  <button type="button" class="comodin verde" onclick="this.classList.toggle('used')" aria-label="Marcar comodín verde como usado">C</button>
+                  <button type="button" class="comodin amarillo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín amarillo como usado">C</button>
                   <button type="button" class="comodin rojo" onclick="this.classList.toggle('used')" aria-label="Marcar comodín rojo como usado">C</button>
-                  <button type="button" class="comodin morado" onclick="this.classList.toggle('used')" aria-label="Marcar comodín morado como usado">C</button>
+                  <button type="button" class="comodin blanco" onclick="this.classList.toggle('used')" aria-label="Marcar comodín blanco como usado">C</button>
                 </div>
                 <button type="button" class="score-toggle" id="score-toggle-${index}"
                         onclick="toggleScoreButtons(${index})"
@@ -1458,15 +1458,15 @@ function rebuildUsedQuestionsByPool() {
 
 function getUsedComodinesState() {
   return teamScores.map((_, teamIndex) => ({
-    verde: Boolean(document.querySelector(`#team-${teamIndex} .comodin.verde`)?.classList.contains('used')),
+    amarillo: Boolean(document.querySelector(`#team-${teamIndex} .comodin.amarillo`)?.classList.contains('used')),
     rojo: Boolean(document.querySelector(`#team-${teamIndex} .comodin.rojo`)?.classList.contains('used')),
-    morado: Boolean(document.querySelector(`#team-${teamIndex} .comodin.morado`)?.classList.contains('used'))
+    blanco: Boolean(document.querySelector(`#team-${teamIndex} .comodin.blanco`)?.classList.contains('used'))
   }));
 }
 
 function applyUsedComodinesState(usedComodines = []) {
   usedComodines.forEach((state, teamIndex) => {
-    ['verde', 'rojo', 'morado'].forEach(color => {
+    ['amarillo', 'rojo', 'blanco'].forEach(color => {
       const el = document.querySelector(`#team-${teamIndex} .comodin.${color}`);
       if (el) el.classList.toggle('used', Boolean(state?.[color]));
     });

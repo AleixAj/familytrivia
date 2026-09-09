@@ -178,14 +178,14 @@ En las categorias de preguntas tipo test, los equipos escriben la opcion o respu
 
 Cada equipo tiene 3 comodines marcables:
 
-- 🟢 Comodin verde: se usa antes de responder. El presentador ensena la pista solo a ese equipo.
+- 🟡 Comodin amarillo: se usa antes de responder. El presentador ensena la pista solo a ese equipo.
 - 🔴 Comodin rojo: se usa antes de responder. Si ese equipo falla la pregunta, no resta puntos.
-- 🟣 Comodin morado: se usa antes de escribir la respuesta. Ese equipo puede leer las respuestas del resto antes de escribir la suya.
+- ⚪ Comodin blanco: se usa antes de escribir la respuesta. Ese equipo puede leer las respuestas del resto antes de escribir la suya.
 
 Reglas importantes:
 
 - Cada comodin solo se puede usar una vez por equipo durante la partida.
-- Si un equipo usa el comodin morado en una pregunta, ningun otro equipo puede usar su comodin morado en esa misma pregunta.
+- Si un equipo usa el comodin blanco en una pregunta, ningun otro equipo puede usar su comodin blanco en esa misma pregunta.
 - Los comodines se usan antes de revelar la respuesta correcta.
 - Cuando un equipo usa un comodin, el presentador lo marca en el panel de puntuaciones para que todos vean cuales le quedan disponibles.
 

@@ -354,9 +354,9 @@
   box-shadow: 0 0 12px currentColor;
 }
 
-.joker-green {
-  background: #22c55e;
-  color: #22c55e;
+.joker-yellow {
+  background: #facc15;
+  color: #facc15;
 }
 
 .joker-red {
@@ -364,9 +364,9 @@
   color: #ef4444;
 }
 
-.joker-purple {
-  background: #a855f7;
-  color: #a855f7;
+.joker-white {
+  background: #f8fafc;
+  color: #f8fafc;
 }
 
 .nav-btn {
@@ -1435,16 +1435,17 @@ h1 {
   outline-offset: 3px;
 }
 
-.comodin.verde  { background: var(--btn-green); box-shadow: 0 0 7px rgba(0, 201, 80, 0.7); }
-.comodin.rojo   { background: var(--btn-red);   box-shadow: 0 0 7px rgba(239, 68, 68, 0.7); }
-.comodin.morado { background: #7c3aed;           box-shadow: 0 0 7px rgba(124, 58, 237, 0.7); }
+.comodin.amarillo { background: #facc15; color: #1f2937; box-shadow: 0 0 7px rgba(250, 204, 21, 0.7); }
+.comodin.rojo     { background: var(--btn-red); box-shadow: 0 0 7px rgba(239, 68, 68, 0.7); }
+.comodin.blanco   { background: #f8fafc; color: #1f2937; box-shadow: 0 0 7px rgba(248, 250, 252, 0.7); }
 
-.comodin.verde:not(.used):hover  { background: #00e55a; box-shadow: 0 0 14px rgba(0, 201, 80, 1); transform: scale(1.15); }
-.comodin.rojo:not(.used):hover   { background: #f87171; box-shadow: 0 0 14px rgba(239, 68, 68, 1); transform: scale(1.15); }
-.comodin.morado:not(.used):hover { background: #9d5ff5; box-shadow: 0 0 14px rgba(124, 58, 237, 1); transform: scale(1.15); }
+.comodin.amarillo:not(.used):hover { background: #fde047; box-shadow: 0 0 14px rgba(250, 204, 21, 1); transform: scale(1.15); }
+.comodin.rojo:not(.used):hover     { background: #f87171; box-shadow: 0 0 14px rgba(239, 68, 68, 1); transform: scale(1.15); }
+.comodin.blanco:not(.used):hover   { background: #ffffff; box-shadow: 0 0 14px rgba(248, 250, 252, 1); transform: scale(1.15); }
 
 .comodin.used {
   background: #374151;
+  color: white;
   box-shadow: none;
   opacity: 0.4;
   animation: comodinStamp 0.35s cubic-bezier(.2, 1.2, .25, 1) both;
