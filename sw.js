@@ -6,17 +6,19 @@
 // ============================================================
 
 // Bump this version when publishing changes so every device drops the old copy.
-const CACHE = 'family-trivia-v2';
+// The ?v= of css/js must match the one used in index.html and ruletas.html:
+// that query string is what forces browsers to download the new file.
+const CACHE = 'family-trivia-v3';
 
 const PRECACHE = [
   './',
   'index.html',
   'ruletas.html',
-  'css/styles.css',
-  'js/questions.js',
-  'js/script.js',
-  'js/ruletas.js',
-  'js/footer.js',
+  'css/styles.css?v=20260910',
+  'js/questions.js?v=20260910',
+  'js/script.js?v=20260910',
+  'js/ruletas.js?v=20260910',
+  'js/footer.js?v=20260910',
   'vendor/bootstrap/bootstrap.min.css',
   'vendor/bootstrap/bootstrap.bundle.min.js',
   'vendor/bootstrap-icons/bootstrap-icons.min.css',
