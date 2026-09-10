@@ -225,7 +225,7 @@ Funcionamiento:
 
 Al pulsar `Empezar` se cuentan las parejas de la tabla `Equipos Formados` y se crea una tarjeta por pareja, con los dos nombres. Si no hay ninguna pareja formada, se entra con los cinco equipos por defecto.
 
-Los equipos formados se guardan temporalmente para pasar al tablero principal. Al recargar la pagina se limpian los equipos guardados.
+Los equipos formados se guardan en el navegador para pasar al tablero principal y siguen ahi aunque se cierre la pestana. Al recargar la pagina con `F5` el juego pregunta antes de borrarlos.
 
 ## Interfaz
 
@@ -251,7 +251,9 @@ Si el presentador entra en `Editar equipos` desde una partida en curso, el juego
 
 Si se cambia el numero de parejas o de jugadores, la partida empieza de cero porque el tablero anterior ya no encaja con las nuevas tarjetas.
 
-Si se recarga la pagina con `F5` durante una partida con progreso, el juego pregunta si continuar donde lo dejasteis o empezar de nuevo, en vez de borrarla sin avisar. En `ruletas.html` pasa lo mismo con las parejas ya formadas.
+La partida se guarda en el navegador del dispositivo que hace de presentador, no en un servidor, y sobrevive a cerrar la pestana e incluso a cerrar el navegador: al volver a abrir el juego aparece un aviso para continuar donde lo dejasteis o empezar de nuevo. Lo mismo pasa al recargar con `F5`, y en `ruletas.html` con las parejas ya formadas.
+
+Como se guarda por dispositivo y navegador, la partida solo reaparece en el mismo sitio donde se estaba jugando. Borrar los datos del navegador o jugar en modo incognito si la borra.
 
 ## Fin de partida
 

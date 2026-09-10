@@ -24,6 +24,12 @@ function readStored(storage, key, fallback) {
   }
 }
 
+// Where the game keeps its progress. localStorage instead of gameStore so a
+// closed tab (or a closed browser) does not throw an unfinished game away.
+// 'familyTriviaStartGame' stays in sessionStorage on purpose: it is a one-shot
+// navigation flag, not progress.
+const gameStore = localStorage;
+
 function showToast(message, type = 'warning') {
   let container = document.getElementById('ajToastContainer');
   if (!container) {
@@ -58,10 +64,10 @@ function goTo(page) {
 
 function goToGamePanel() {
   if (typeof saveGameState === 'function') saveGameState();
-  sessionStorage.setItem(GAME_MODE_KEY, 'teams');
+  gameStore.setItem(GAME_MODE_KEY, 'teams');
 
   // One card per pair formed in the wheels; fall back to the classic five teams.
-  const storedPairs = readStored(sessionStorage, 'ruletaTeams', []);
+  const storedPairs = readStored(gameStore, 'ruletaTeams', []);
   const pairs = Array.isArray(storedPairs) ? storedPairs.filter(Boolean) : [];
 
   let count = DEFAULT_TEAMS;
@@ -75,23 +81,23 @@ function goToGamePanel() {
   }
 
   // A different number of teams means the previous board no longer fits: start clean.
-  const savedCount = Number(readStored(sessionStorage, GAME_STATE_KEY, {}).teamCount) || null;
+  const savedCount = Number(readStored(gameStore, GAME_STATE_KEY, {}).teamCount) || null;
   if (savedCount && savedCount !== count) clearGameProgress();
 
-  sessionStorage.setItem(TEAM_COUNT_KEY, String(count));
+  gameStore.setItem(TEAM_COUNT_KEY, String(count));
   sessionStorage.setItem('familyTriviaStartGame', '1');
   window.location.href = 'index.html?start=1';
 }
 
 function goToTeamsSetup() {
   const fromOtherMode = getGameMode() !== 'teams';
-  sessionStorage.setItem(GAME_MODE_KEY, 'teams');
-  sessionStorage.setItem(TEAM_COUNT_KEY, String(DEFAULT_TEAMS));
+  gameStore.setItem(GAME_MODE_KEY, 'teams');
+  gameStore.setItem(TEAM_COUNT_KEY, String(DEFAULT_TEAMS));
 
   if (fromOtherMode) {
     // Switching from solo/players starts a new game, so don't carry that progress over.
     clearGameProgress();
-    sessionStorage.removeItem(CUSTOM_NAMES_KEY);
+    gameStore.removeItem(CUSTOM_NAMES_KEY);
     window.location.href = 'ruletas.html';
     return;
   }
@@ -143,23 +149,23 @@ const MIN_PLAYERS = 2;
 const MAX_PLAYERS = 15;   // 3 filas de 5 tarjetas
 
 function getGameMode() {
-  const mode = sessionStorage.getItem(GAME_MODE_KEY);
+  const mode = gameStore.getItem(GAME_MODE_KEY);
   return mode === 'solo' || mode === 'players' ? mode : 'teams';
 }
 
 function getStoredTeamCount() {
-  const stored = parseInt(sessionStorage.getItem(TEAM_COUNT_KEY), 10);
+  const stored = parseInt(gameStore.getItem(TEAM_COUNT_KEY), 10);
   return Number.isFinite(stored) ? stored : null;
 }
 
 // Names typed in solo/players setup; ruletas names live in their own storage.
 function getCustomNames() {
-  const parsed = readStored(sessionStorage, CUSTOM_NAMES_KEY, []);
+  const parsed = readStored(gameStore, CUSTOM_NAMES_KEY, []);
   return Array.isArray(parsed) ? parsed : [];
 }
 
 function storeCustomNames(names) {
-  sessionStorage.setItem(CUSTOM_NAMES_KEY, JSON.stringify(names));
+  gameStore.setItem(CUSTOM_NAMES_KEY, JSON.stringify(names));
 }
 
 function applyGameMode(mode = getGameMode()) {
@@ -308,9 +314,9 @@ function startPlayersGame(names) {
 
 // Shared entry point for solo and players modes: fresh board, custom names, go.
 function startCustomGame(mode, names) {
-  sessionStorage.setItem(GAME_MODE_KEY, mode);
-  sessionStorage.setItem(TEAM_COUNT_KEY, String(names.length));
-  sessionStorage.removeItem('ruletaTeams');
+  gameStore.setItem(GAME_MODE_KEY, mode);
+  gameStore.setItem(TEAM_COUNT_KEY, String(names.length));
+  gameStore.removeItem('ruletaTeams');
   storeCustomNames(names);
 
   resetBoardAndScores();
@@ -605,10 +611,10 @@ function persistTeamName(teamIndex, name) {
   saved[teamIndex] = name;
   localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
 
-  const teams = readStored(sessionStorage, 'ruletaTeams', []);
+  const teams = readStored(gameStore, 'ruletaTeams', []);
   if (teamIndex < teams.length) {
     teams[teamIndex] = name;
-    sessionStorage.setItem('ruletaTeams', JSON.stringify(teams));
+    gameStore.setItem('ruletaTeams', JSON.stringify(teams));
   }
 }
 
@@ -626,7 +632,7 @@ function syncTeamNamesFromStorage(gameStateNames) {
   }
 
   const savedTeams = readStored(localStorage, 'ruletaTeamNames', {});
-  const formedTeams = readStored(sessionStorage, 'ruletaTeams', []);
+  const formedTeams = readStored(gameStore, 'ruletaTeams', []);
   const forceDefaults = Object.keys(savedTeams).length === 0 && formedTeams.length === 0;
 
   for (let i = 0; i < teamCount; i++) {
@@ -1337,15 +1343,15 @@ function getNavigationType() {
 }
 
 function clearGameProgress() {
-  sessionStorage.removeItem(GAME_STATE_KEY);
+  gameStore.removeItem(GAME_STATE_KEY);
 }
 
 function clearSavedGame() {
   clearGameProgress();
-  sessionStorage.removeItem('ruletaTeams');
-  sessionStorage.removeItem(GAME_MODE_KEY);
-  sessionStorage.removeItem(TEAM_COUNT_KEY);
-  sessionStorage.removeItem(CUSTOM_NAMES_KEY);
+  gameStore.removeItem('ruletaTeams');
+  gameStore.removeItem(GAME_MODE_KEY);
+  gameStore.removeItem(TEAM_COUNT_KEY);
+  gameStore.removeItem(CUSTOM_NAMES_KEY);
   localStorage.removeItem('ruletaTeamNames');
 }
 
@@ -1355,7 +1361,7 @@ function clearSavedGameOnReload() {
 
 // Is there anything worth keeping in the saved game (points, played cells, names)?
 function hasSavedProgress() {
-  const state = readStored(sessionStorage, GAME_STATE_KEY, null);
+  const state = readStored(gameStore, GAME_STATE_KEY, null);
   if (!state || typeof state !== 'object') return false;
 
   const scored = Array.isArray(state.teamScores) && state.teamScores.some(score => Number(score) !== 0);
@@ -1503,7 +1509,7 @@ function saveGameState() {
   });
 
   try {
-    sessionStorage.setItem(GAME_STATE_KEY, snapshot);
+    gameStore.setItem(GAME_STATE_KEY, snapshot);
   } catch {
     // Out of quota or storage blocked: the game keeps running in memory.
   }
@@ -1512,7 +1518,7 @@ function saveGameState() {
 function restoreGameState() {
   if (!isIndexGamePage()) return;
 
-  const state = readStored(sessionStorage, GAME_STATE_KEY, null);
+  const state = readStored(gameStore, GAME_STATE_KEY, null);
   if (!state || typeof state !== 'object') return;
 
   const savedCount = Number(state.teamCount) || (Array.isArray(state.teamScores) ? state.teamScores.length : teamCount);
@@ -2378,11 +2384,18 @@ function onConfettiResize() {
 // Ruletas lives in js/ruletas.js. script.js keeps shared helpers and Family Trivia only.
 
 document.addEventListener('DOMContentLoaded', () => {
-  // On reload, ask before throwing away a game that is actually in progress.
+  // Ask before throwing away a game that is actually in progress. The saved game
+  // outlives the tab now, so the offer to resume is not limited to F5: reopening
+  // the page days later must find the board exactly as it was left.
+  // Arriving straight from the mode setup or the wheels is an explicit choice,
+  // so that path skips the question.
   // On ruletas.html the wheels script owns this decision, so don't wipe anything here.
   const onGamePage = isIndexGamePage();
-  const reloadedWithGame = onGamePage && getNavigationType() === 'reload' && hasSavedProgress();
-  if (onGamePage && !reloadedWithGame) clearSavedGameOnReload();
+  // A reload keeps the ?start=1 of the setup in the address bar, so only treat
+  // it as an explicit entry when the page was actually navigated to.
+  const arrivingFromSetup = shouldStartGamePanel() && getNavigationType() !== 'reload';
+  const resumableGame = onGamePage && !arrivingFromSetup && hasSavedProgress();
+  if (onGamePage && !resumableGame) clearSavedGameOnReload();
 
   highlightActiveButton();
   buildBoard();
@@ -2390,7 +2403,7 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreGameState();
   initIndexPage();
   // Opening the panel needs the board and the cards already in place.
-  if (reloadedWithGame) {
+  if (resumableGame) {
     sessionStorage.removeItem('familyTriviaStartGame');
     askResume({
       onKeep: () => startTrivia(),

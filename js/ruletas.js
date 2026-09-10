@@ -328,18 +328,18 @@ function initRuletasPage() {
   const spinBothBtn = document.getElementById('spinBothBtn');
   const teamsListEl = document.getElementById('teamsList');
   const clearTeamsBtn = document.getElementById('clearTeamsBtn');
-  // sessionStorage persists across normal navigations. On F5 we start clean,
-  // but if there are pairs already formed we ask first instead of losing them.
+  // The pairs live in localStorage now, like the rest of the progress, so they
+  // survive a closed tab. On F5 we still ask before throwing them away.
   const _navType = (performance.getEntriesByType?.('navigation')?.[0]?.type)
     ?? (performance.navigation?.type === 1 ? 'reload' : 'navigate');
 
-  let teams = readStored(sessionStorage, 'ruletaTeams', []);
+  let teams = readStored(localStorage, 'ruletaTeams', []);
   if (!Array.isArray(teams)) teams = [];
 
   const clearEverything = () => {
     teams = [];
-    sessionStorage.removeItem('ruletaTeams');
-    sessionStorage.removeItem('familyTriviaGameState');
+    localStorage.removeItem('ruletaTeams');
+    localStorage.removeItem('familyTriviaGameState');
     localStorage.removeItem('ruletaTeamNames');
   };
 
@@ -361,7 +361,7 @@ function initRuletasPage() {
   // Both stores are rewritten from `teams` so removing a pair cannot leave a
   // stale name behind: the board reads the names by index from localStorage.
   function syncTeams() {
-    sessionStorage.setItem('ruletaTeams', JSON.stringify(teams));
+    localStorage.setItem('ruletaTeams', JSON.stringify(teams));
     const saved = {};
     teams.forEach((team, i) => { saved[i] = team; });
     localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
