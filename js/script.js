@@ -340,8 +340,10 @@ function startTrivia() {
     game?.classList.add('game-entering');
     setTimeout(() => game?.classList.remove('game-entering'), 1400);
   }, 220);
-  restoreGameState();
+  // applyGameMode() rebuilds the team cards from scratch, so it has to run
+  // before restoring: the other way around it wiped the used comodines.
   applyGameMode();
+  restoreGameState();
 }
 
 function shouldStartGamePanel() {

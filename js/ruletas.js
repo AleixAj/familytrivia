@@ -23,7 +23,7 @@ function initRuletasPage() {
     this.animationId = null;
     this.size = Math.min(this.canvas.width, this.canvas.height) * 0.95;  // Slightly smaller for better tablet fit.
     this.center = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
-    this.radius = Math.min(this.size / 2 - 8, 160);  // Cap radius and keep enough margin on tablets.
+    this.radius = Math.max(0, Math.min(this.size / 2 - 8, 160));  // Cap radius and keep enough margin on tablets.
     this.font = 'bold 14px Poppins, sans-serif';
     this.isSpinning = false;
     this.init();
@@ -34,7 +34,16 @@ function initRuletasPage() {
     const rect = this.canvas.getBoundingClientRect();
     const logicalW = rect.width;
     const logicalH = rect.height;
-    
+
+    // The wheel can be measured before the layout exists (hidden tab, page still
+    // loading). Writing a zero size there blanks the canvas for good and makes
+    // the drawing calls throw, so keep the last good size and try again later.
+    if (!(logicalW > 0) || !(logicalH > 0)) {
+      this.ready = false;
+      return;
+    }
+    this.ready = true;
+
     // Physical canvas dimensions for high-DPI rendering.
     this.canvas.width = Math.round(logicalW * dpr);
     this.canvas.height = Math.round(logicalH * dpr);
@@ -51,7 +60,7 @@ function initRuletasPage() {
     
     // Update wheel size and radius from the rendered layout.
     this.size = Math.min(logicalW, logicalH) * 0.92;
-    this.radius = Math.min(this.size / 2 - 12, 150);
+    this.radius = Math.max(0, Math.min(this.size / 2 - 12, 150));
   };
 
   Wheel.prototype.init = function() {
@@ -110,9 +119,10 @@ function initRuletasPage() {
 
   Wheel.prototype.draw = function() {
     if (!this.ctx) return;
-    
+
     // Always recalculate dimensions before drawing.
     this.updateDimensions();
+    if (!this.ready || this.radius <= 0) return;
     
     const ctx = this.ctx;
     const dpr = window.devicePixelRatio || 1;
@@ -294,6 +304,8 @@ function initRuletasPage() {
       if (!c) return;
       const parent = c.parentElement;
       const available = Math.min(parent.clientWidth - 16, parent.clientWidth * 0.9);
+      // Nothing laid out yet: a negative size would blank the wheel.
+      if (!(available > 0)) return;
       c.style.width = available + 'px';
       c.style.height = available + 'px';
     });
@@ -346,7 +358,14 @@ function initRuletasPage() {
     }
   }
 
-  function syncTeams() { sessionStorage.setItem('ruletaTeams', JSON.stringify(teams)); }
+  // Both stores are rewritten from `teams` so removing a pair cannot leave a
+  // stale name behind: the board reads the names by index from localStorage.
+  function syncTeams() {
+    sessionStorage.setItem('ruletaTeams', JSON.stringify(teams));
+    const saved = {};
+    teams.forEach((team, i) => { saved[i] = team; });
+    localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
+  }
 
   // First five keep the classic colours; the rest extend the palette for bigger groups.
   const TEAM_COLORS      = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7',
@@ -393,6 +412,7 @@ function initRuletasPage() {
       `;
       div.querySelector('button').onclick = () => {
         teams.splice(i, 1);
+        syncTeams();
         renderTeams();
       };
       teamsListEl.appendChild(div);
@@ -519,7 +539,7 @@ function initRuletasPage() {
           }, 3400);
         } else {
           spinBothBtn.disabled = false;
-          spinBothBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Girar las dos ruletas a la vez';
+          if (spinBothLabel) spinBothLabel.textContent = 'Girar las dos ruletas a la vez';
         }
       }
     }
@@ -539,6 +559,22 @@ function initRuletasPage() {
       }
     });
   }
+
+  // A wheel measured before it has a size skips its drawing, so redraw as soon
+  // as the browser gives it one: a hidden tab, a slow layout or a rotated phone
+  // would otherwise leave an empty circle on screen.
+  if (typeof ResizeObserver !== 'undefined') {
+    const redraw = new ResizeObserver(entries => {
+      entries.forEach(entry => {
+        const wheel = entry.target === wheelA.canvas ? wheelA : wheelB;
+        if (wheel && wheel.canvas && !wheel.isSpinning) wheel.draw();
+      });
+    });
+    [wheelA, wheelB].forEach(w => { if (w && w.canvas) redraw.observe(w.canvas); });
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) resizeAllCanvases();
+  });
 
   renderTeams();
 }
