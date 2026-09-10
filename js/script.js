@@ -24,11 +24,30 @@ function readStored(storage, key, fallback) {
   }
 }
 
-// Where the game keeps its progress. localStorage instead of gameStore so a
-// closed tab (or a closed browser) does not throw an unfinished game away.
+// Where the game keeps its progress: localStorage instead of sessionStorage, so
+// a closed tab (or a closed browser) does not throw an unfinished game away.
+// Some privacy settings make even reading window.localStorage throw, and this
+// runs while the script loads, so a failure here would leave the page dead
+// instead of just forgetful. Fall back to a memory-only store in that case: the
+// game works as usual, it just cannot remember anything once the page is gone.
 // 'familyTriviaStartGame' stays in sessionStorage on purpose: it is a one-shot
 // navigation flag, not progress.
-const gameStore = localStorage;
+const gameStore = (() => {
+  try {
+    const store = window.localStorage;
+    const probe = '__familyTriviaProbe';
+    store.setItem(probe, '1');
+    store.removeItem(probe);
+    return store;
+  } catch {
+    const memory = new Map();
+    return {
+      getItem: key => (memory.has(key) ? memory.get(key) : null),
+      setItem: (key, value) => { memory.set(key, String(value)); },
+      removeItem: key => { memory.delete(key); }
+    };
+  }
+})();
 
 function showToast(message, type = 'warning') {
   let container = document.getElementById('ajToastContainer');
@@ -80,9 +99,19 @@ function goToGamePanel() {
     showToast('No has formado ninguna pareja: se usarán los 5 equipos por defecto', 'info');
   }
 
-  // A different number of teams means the previous board no longer fits: start clean.
-  const savedCount = Number(readStored(gameStore, GAME_STATE_KEY, {}).teamCount) || null;
-  if (savedCount && savedCount !== count) clearGameProgress();
+  // A different set of teams means the previous board no longer fits: start clean.
+  // The saved game now outlives the tab, so matching only the number of teams
+  // would let a brand new group inherit last week's points. When there are pairs
+  // we compare the names too; with no pairs formed the count is all we have.
+  const savedState = readStored(gameStore, GAME_STATE_KEY, {});
+  const savedCount = Number(savedState.teamCount) || null;
+  if (savedCount) {
+    const savedNames = Array.isArray(savedState.teamNames) ? savedState.teamNames : [];
+    const sameTeams = pairs.length
+      ? savedNames.length === pairs.length && savedNames.every((name, i) => name === pairs[i])
+      : savedCount === count;
+    if (!sameTeams) clearGameProgress();
+  }
 
   gameStore.setItem(TEAM_COUNT_KEY, String(count));
   sessionStorage.setItem('familyTriviaStartGame', '1');
@@ -607,9 +636,9 @@ function persistTeamName(teamIndex, name) {
     return;
   }
 
-  const saved = readStored(localStorage, 'ruletaTeamNames', {});
+  const saved = readStored(gameStore, 'ruletaTeamNames', {});
   saved[teamIndex] = name;
-  localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
+  gameStore.setItem('ruletaTeamNames', JSON.stringify(saved));
 
   const teams = readStored(gameStore, 'ruletaTeams', []);
   if (teamIndex < teams.length) {
@@ -631,7 +660,7 @@ function syncTeamNamesFromStorage(gameStateNames) {
     return;
   }
 
-  const savedTeams = readStored(localStorage, 'ruletaTeamNames', {});
+  const savedTeams = readStored(gameStore, 'ruletaTeamNames', {});
   const formedTeams = readStored(gameStore, 'ruletaTeams', []);
   const forceDefaults = Object.keys(savedTeams).length === 0 && formedTeams.length === 0;
 
@@ -1352,7 +1381,7 @@ function clearSavedGame() {
   gameStore.removeItem(GAME_MODE_KEY);
   gameStore.removeItem(TEAM_COUNT_KEY);
   gameStore.removeItem(CUSTOM_NAMES_KEY);
-  localStorage.removeItem('ruletaTeamNames');
+  gameStore.removeItem('ruletaTeamNames');
 }
 
 function clearSavedGameOnReload() {

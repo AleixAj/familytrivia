@@ -8,17 +8,17 @@
 // Bump this version when publishing changes so every device drops the old copy.
 // The ?v= of css/js must match the one used in index.html and ruletas.html:
 // that query string is what forces browsers to download the new file.
-const CACHE = 'family-trivia-v3';
+const CACHE = 'family-trivia-v4';
 
 const PRECACHE = [
   './',
   'index.html',
   'ruletas.html',
-  'css/styles.css?v=20260910f',
-  'js/questions.js?v=20260910f',
-  'js/script.js?v=20260910f',
-  'js/ruletas.js?v=20260910f',
-  'js/footer.js?v=20260910f',
+  'css/styles.css?v=20260910g',
+  'js/questions.js?v=20260910g',
+  'js/script.js?v=20260910g',
+  'js/ruletas.js?v=20260910g',
+  'js/footer.js?v=20260910g',
   'vendor/bootstrap/bootstrap.min.css',
   'vendor/bootstrap/bootstrap.bundle.min.js',
   'vendor/bootstrap-icons/bootstrap-icons.min.css',
@@ -74,7 +74,11 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request).then(hit => hit || (isPage ? caches.match('index.html') : undefined)))
+        // ignoreSearch so an offline device still finds css/js in the cache after
+        // the ?v= changes: without it, forgetting to update PRECACHE here would
+        // silently break offline play.
+        .catch(() => caches.match(request, { ignoreSearch: true })
+          .then(hit => hit || (isPage ? caches.match('index.html') : undefined)))
     );
     return;
   }

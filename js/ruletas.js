@@ -333,14 +333,14 @@ function initRuletasPage() {
   const _navType = (performance.getEntriesByType?.('navigation')?.[0]?.type)
     ?? (performance.navigation?.type === 1 ? 'reload' : 'navigate');
 
-  let teams = readStored(localStorage, 'ruletaTeams', []);
+  let teams = readStored(gameStore, 'ruletaTeams', []);
   if (!Array.isArray(teams)) teams = [];
 
   const clearEverything = () => {
     teams = [];
-    localStorage.removeItem('ruletaTeams');
-    localStorage.removeItem('familyTriviaGameState');
-    localStorage.removeItem('ruletaTeamNames');
+    gameStore.removeItem('ruletaTeams');
+    gameStore.removeItem('familyTriviaGameState');
+    gameStore.removeItem('ruletaTeamNames');
   };
 
   if (_navType === 'reload') {
@@ -361,10 +361,10 @@ function initRuletasPage() {
   // Both stores are rewritten from `teams` so removing a pair cannot leave a
   // stale name behind: the board reads the names by index from localStorage.
   function syncTeams() {
-    localStorage.setItem('ruletaTeams', JSON.stringify(teams));
+    gameStore.setItem('ruletaTeams', JSON.stringify(teams));
     const saved = {};
     teams.forEach((team, i) => { saved[i] = team; });
-    localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
+    gameStore.setItem('ruletaTeamNames', JSON.stringify(saved));
   }
 
   // First five keep the classic colours; the rest extend the palette for bigger groups.
@@ -440,9 +440,9 @@ function initRuletasPage() {
 
   function saveRuletaTeam(teamNumber, nameA, nameB) {
     const displayName = `${nameA} y ${nameB}`;
-    const saved = readStored(localStorage, 'ruletaTeamNames', {});
+    const saved = readStored(gameStore, 'ruletaTeamNames', {});
     saved[teamNumber - 1] = displayName;
-    localStorage.setItem('ruletaTeamNames', JSON.stringify(saved));
+    gameStore.setItem('ruletaTeamNames', JSON.stringify(saved));
     const idx = teamNumber - 1;
     if (idx < teams.length) {
       teams[idx] = displayName;
@@ -555,7 +555,7 @@ function initRuletasPage() {
         teams = [];
         syncTeams();
         renderTeams();
-        localStorage.removeItem('ruletaTeamNames');
+        gameStore.removeItem('ruletaTeamNames');
       }
     });
   }
