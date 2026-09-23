@@ -6,6 +6,11 @@
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
 ![Chart.js](https://img.shields.io/badge/Chart.js-ranking-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
 
+<p>
+  <img src="docs/readme/lang-es-active.svg" alt="Español" width="170">
+  <a href="README.en.md"><img src="docs/readme/lang-en.svg" alt="English" width="170"></a>
+</p>
+
 Juego familiar de preguntas estilo tablero, pensado para jugar todos juntos en una casa, con un presentador dirigiendo la partida desde una tablet o pantalla visible para todos. Se puede jugar solo, cada uno por su cuenta o por parejas formadas con las ruletas. Incluye preguntas por categorias, respuestas simultaneas, control manual de puntos y ranking final con estadisticas.
 
 ## Capturas de pantalla
