@@ -9,6 +9,7 @@
 <p>
   <a href="README.md"><img src="docs/readme/lang-es.svg" alt="Español" width="170"></a>
   <img src="docs/readme/lang-en-active.svg" alt="English" width="170">
+  <a href="README.ca.md"><img src="docs/readme/lang-ca.svg" alt="Català" width="170"></a>
 </p>
 
 A board-style family quiz game, designed for everyone to play together at home, with a host running the game from a tablet or a screen everyone can see. It can be played solo, with everyone playing individually, or in pairs formed with the spinning wheels. It includes questions by category, simultaneous answers, manual score control and a final ranking with statistics.
@@ -72,7 +73,7 @@ When the whole board has been played, a final ranking is shown with the winning 
 
 When the game opens, you choose one of three modes:
 
-- **Single player**: you enter your name and play alone, with a single score card.
+- **Single player**: you enter your name and play alone, with a single scorecard.
 - **Individual multiplayer**: you enter how many people are playing (from 2 to 15) and each person's name. Each person gets their own card.
 - **Multiplayer in pairs**: takes you to `ruletas.html`, where the pairs are formed. Each pair becomes a card with both names, up to 15 pairs (30 people).
 
@@ -84,18 +85,18 @@ In every mode, the scoreboard cards are generated according to the actual number
 
 The game is designed for mixed family groups. For example, if 10 people are playing plus the host:
 
-- 5 younger players are entered in `Ruleta 1`.
-- 5 older players are entered in `Ruleta 2`.
+- 5 younger players are entered in `Ruleta 1` (wheel 1).
+- 5 older players are entered in `Ruleta 2` (wheel 2).
 - The wheels form 5 pairs, matching one younger player with one older player.
 - Each pair becomes a team.
 
-This way each team combines different knowledge and can better support each other on general knowledge, current affairs, music, Disney or riddle questions.
+This way each team combines different knowledge and is better equipped for general knowledge, current affairs, music, Disney or riddle questions.
 
 ### Teams
 
 - Up to 15 teams or players can play, three rows of five cards on desktop.
 - The first five keep the classic colors (Red, Blue, Green, Yellow and Purple), and from the sixth onward pink, cyan, orange, lime, indigo, turquoise, magenta, sky, coral and mint are used.
-- Without custom names, the cards are called `Jugador 1`, `Jugador 2`... in individual mode, and `Equipo Rojo`, `Equipo Azul`... in pairs mode.
+- If no names are entered, the cards are called `Jugador 1` (Player 1), `Jugador 2`... in individual mode, and `Equipo Rojo` (Red Team), `Equipo Azul` (Blue Team)... in pairs mode.
 - Names can be changed at any time from the scoreboard using the edit button.
 - If teams are formed from `ruletas.html`, the generated names are carried over automatically to the main board.
 - There must be a host who opens questions, keeps time, reveals answers and awards points.
@@ -129,7 +130,7 @@ Difficulty increases with the square's value:
 
 ### Board progress
 
-Next to the turn bar there is a counter of squares played (for example `14/36`). When the last one is played, the game lets you know the game can be finished.
+Next to the turn bar there is a counter of squares played (for example `14/36`). When the last one is played, the game lets you know that the match can now be ended.
 
 ### Turns
 
@@ -141,8 +142,8 @@ Above the board there is a bar showing whose turn it is, which also highlights t
 2. The host opens that question on the tablet or main screen.
 3. All teams think of the answer at the same time.
 4. Each team writes its answer on paper or a whiteboard.
-5. When the host says so, everyone turns around or shows their answers at the same time.
-6. The host presses `Resolver` to show the correct answer or the explanation.
+5. When the host says so, everyone turns over or shows their answers at the same time.
+6. The host presses `Resolver` (resolve) to show the correct answer or the explanation.
 7. The host adds or subtracts the corresponding points for each team.
 8. When the question is closed, the scoring screen opens with the correct answer and the teams.
 9. The square is marked as used and no longer scores, although it can be reopened to review the answer.
@@ -163,13 +164,13 @@ Each square has a positive value and a penalty equal to half its points:
 General rule:
 
 - Each team that answers correctly earns the full value of the square.
-- Each team that answers wrong loses half the value of the square.
+- Each team that answers incorrectly loses half the value of the square.
 - In `Adivinanzas` (riddles), wrong answers do not lose points.
 
 There are two ways to award points:
 
-- **Scoring screen** (opens when the question is closed): shows the correct answer at the top, with its letter and text, and below it one row per team with a large correct button and a large wrong button, designed for tapping on a tablet. Marking them automatically applies the square's value, half of it as a negative if wrong, and nothing if it is a riddle. Tapping the same mark again removes it and returns the points, and switching from correct to wrong recalculates the difference without stacking. `Ver la pregunta` goes back to the question text and `Listo` closes the round and passes the turn.
-- **Buttons on each card**: hidden behind the `Ajustar puntos` button, which opens a floating panel over the card with the additions, subtractions and reset. It is meant for one-off corrections; in the per-category statistics those points are attributed to the last question opened. Only one panel can be open at a time, and it closes when you click outside it or press `Escape`.
+- **Scoring screen** (opens when the question is closed): shows the correct answer at the top, with its letter and text, and below it one row per team with a large correct button and a large wrong button, designed for tapping on a tablet. Marking them automatically applies the square's value, half of it as a negative if wrong, and nothing if it is a riddle. Tapping the same mark again removes it and returns the points, and switching from correct to wrong recalculates the difference without stacking. `Ver la pregunta` (view the question) goes back to the question text and `Listo` (done) closes the round and passes the turn.
+- **Buttons on each card**: hidden behind the `Ajustar puntos` (adjust points) button, which opens a floating panel over the card with the add, subtract and reset buttons. It is meant for one-off corrections; in the per-category statistics those points are attributed to the last question opened. Only one panel can be open at a time, and it closes when you tap outside it or press `Escape`.
 
 If the question on a square where points have already been awarded is changed, those points are returned automatically, because that question is no longer being played.
 
@@ -212,7 +213,7 @@ Riddles have no options. Each team writes down the answer it thinks is correct.
 Special rule:
 
 - If a team answers correctly, it earns the square's points.
-- If a team answers wrong, it does not lose points.
+- If a team answers incorrectly, it does not lose points.
 
 ## Wheels
 
@@ -226,15 +227,15 @@ How it works:
 4. A team is formed with one person from each wheel.
 5. The winning names are removed from the wheels.
 6. If only one person is left on each wheel, they are paired automatically.
-7. When all the teams are formed, press `Empezar` to go to the board.
+7. When all the teams are formed, press `Empezar` (start) to go to the board.
 
-When you press `Empezar`, the pairs in the `Equipos Formados` table are counted and one card is created per pair, with both names. If no pair has been formed, the game starts with the five default teams.
+When you press `Empezar`, the pairs in the `Equipos Formados` (formed teams) table are counted and one card is created per pair, with both names. If no pair has been formed, the game starts with the five default teams.
 
 The formed teams are saved in the browser to carry them over to the main board, and they stay there even if the tab is closed. When reloading the page with `F5`, the game asks before deleting them.
 
 ## Interface
 
-- The `Reglas` button in the navbar opens a modal with the full rules during the game.
+- The `Reglas` (rules) button in the navbar opens a modal with the full rules during the game.
 - The `Family Trivia` logo in the navbar goes back to the home page.
 - The `Aleix AJ` link and the footer logo lead to the author's portfolio. They are displayed with the portfolio's cyan-blue gradient (`#a5f3fc -> #22d3ee -> #0891b2`), just like the navbar logo, to reinforce the brand identity.
 - The interface is adapted for desktop, tablet and mobile, including a responsive board and score panel.
@@ -334,7 +335,7 @@ The `index.html` file loads `js/questions.js` first and then `js/script.js`, so 
 
 ## Works offline
 
-All libraries are served from the project itself, in `vendor/`: Bootstrap, Bootstrap Icons (with its fonts), Chart.js and the Poppins and Russo One typefaces (latin and latin-ext subsets). The page makes no requests to external servers.
+All libraries are served from the project itself, in `vendor/`: Bootstrap, Bootstrap Icons (with its fonts), Chart.js and the Poppins and Russo One typefaces (Latin and latin-ext subsets). The page makes no requests to external servers.
 
 In addition, `sw.js` stores the game in the browser the first time it is opened, so afterwards it can be played without a connection: board, questions, scoreboard, wheels and statistics. The only thing that needs the network is the audio for `Bandas sonoras` and `Disney`, which is too heavy to store; if it fails to load, the game shows a notice and the question can be swapped.
 

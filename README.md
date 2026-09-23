@@ -9,6 +9,7 @@
 <p>
   <img src="docs/readme/lang-es-active.svg" alt="Español" width="170">
   <a href="README.en.md"><img src="docs/readme/lang-en.svg" alt="English" width="170"></a>
+  <a href="README.ca.md"><img src="docs/readme/lang-ca.svg" alt="Català" width="170"></a>
 </p>
 
 Juego familiar de preguntas estilo tablero, pensado para jugar todos juntos en una casa, con un presentador dirigiendo la partida desde una tablet o pantalla visible para todos. Se puede jugar solo, cada uno por su cuenta o por parejas formadas con las ruletas. Incluye preguntas por categorias, respuestas simultaneas, control manual de puntos y ranking final con estadisticas.
