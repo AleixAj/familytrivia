@@ -349,5 +349,5 @@ When publishing changes to `css/` or `js/`, you need to bump the `?v=` on the `<
 - It is designed for local use, family gatherings or simple static deployment.
 - The footer includes a link to Aleix Auque's portfolio using the `AJ` logo with the portfolio's cyan-blue gradient.
 - Animations are disabled automatically for users with `prefers-reduced-motion: reduce`, improving accessibility without losing the visual effect for everyone else.
-- Scripts are loaded with `defer` while keeping their order, there is a `preconnect` to Google Fonts and the CDN, and images that are not visible on load are only loaded when needed.
+- Scripts are loaded with `defer` while keeping their order, all libraries and fonts are served from `vendor/` (no `preconnect` or requests to Google Fonts or a CDN), and images that are not visible on load are only loaded when needed.
 - The board's neon pulse is animated via opacity on a pseudo-element instead of animating `box-shadow` on all 36 squares, which forced the board to repaint on every frame.

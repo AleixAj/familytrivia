@@ -349,5 +349,5 @@ En publicar canvis a `css/` o `js/` cal pujar el `?v=` que porten els `<link>` i
 - Està pensat per a ús local, reunions familiars o un desplegament estàtic senzill.
 - El peu de pàgina inclou un enllaç al portafolis d'Aleix Auque amb el logotip `AJ` i el degradat blau cian del portafolis.
 - Les animacions es desactiven automàticament per als usuaris amb `prefers-reduced-motion: reduce`, cosa que millora l'accessibilitat sense perdre l'efecte visual per a la resta.
-- Els scripts es carreguen amb `defer` mantenint-ne l'ordre, hi ha `preconnect` a Google Fonts i al CDN, i les imatges que no es veuen en entrar es carreguen només quan cal.
+- Els scripts es carreguen amb `defer` mantenint-ne l'ordre, totes les biblioteques i fonts se serveixen des de `vendor/` (sense `preconnect` ni peticions a Google Fonts o a un CDN), i les imatges que no es veuen en entrar es carreguen només quan cal.
 - El pols de neó del tauler s'anima per opacitat sobre un pseudoelement en lloc d'animar `box-shadow` a les 36 caselles, cosa que obligava a repintar el tauler a cada fotograma.
