@@ -227,9 +227,9 @@ Funcionament:
 4. Es forma un equip amb una persona de cada ruleta.
 5. Els noms guanyadors s'eliminen de les ruletes.
 6. Si només queda una persona a cada ruleta, s'aparellen automàticament.
-7. Quan tots els equips estiguin formats, prem `Empezar` (començar) per anar al tauler.
+7. Quan tots els equips estiguin formats, prem `¡Empezar!` (començar) per anar al tauler.
 
-En prémer `Empezar`, es compten les parelles de la taula `Equipos Formados` (equips formats) i es crea una targeta per parella, amb els dos noms. Si no hi ha cap parella formada, s'entra amb els cinc equips per defecte.
+En prémer `¡Empezar!`, es compten les parelles de la taula `Equipos Formados` (equips formats) i es crea una targeta per parella, amb els dos noms. Si no hi ha cap parella formada, s'entra amb els cinc equips per defecte.
 
 Els equips formats es desen al navegador per passar-los al tauler principal i s'hi mantenen encara que es tanqui la pestanya. En recarregar la pàgina amb `F5`, el joc pregunta abans d'esborrar-los.
 

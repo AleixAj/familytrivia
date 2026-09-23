@@ -227,9 +227,9 @@ How it works:
 4. A team is formed with one person from each wheel.
 5. The winning names are removed from the wheels.
 6. If only one person is left on each wheel, they are paired automatically.
-7. When all the teams are formed, press `Empezar` (start) to go to the board.
+7. When all the teams are formed, press `¡Empezar!` (start) to go to the board.
 
-When you press `Empezar`, the pairs in the `Equipos Formados` (formed teams) table are counted and one card is created per pair, with both names. If no pair has been formed, the game starts with the five default teams.
+When you press `¡Empezar!`, the pairs in the `Equipos Formados` (formed teams) table are counted and one card is created per pair, with both names. If no pair has been formed, the game starts with the five default teams.
 
 The formed teams are saved in the browser to carry them over to the main board, and they stay there even if the tab is closed. When reloading the page with `F5`, the game asks before deleting them.
 

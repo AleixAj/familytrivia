@@ -276,7 +276,7 @@ El ranking final muestra:
 - Categoría más favorable y más difícil.
 - Estadísticas por categoría.
 
-Desde la pantalla final también se puede reiniciar el tablero y las puntuaciones.
+Desde la pantalla final también se pueden reiniciar el tablero y las puntuaciones.
 
 ## Uso
 
