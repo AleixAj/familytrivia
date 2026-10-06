@@ -5,20 +5,24 @@
 // the audios folder is far too big to precache.
 // ============================================================
 
-// Bump this version when publishing changes so every device drops the old copy.
-// The ?v= of css/js must match the one used in index.html and ruletas.html:
-// that query string is what forces browsers to download the new file.
-const CACHE = 'family-trivia-v4';
+// Raise this number when publishing, so every device drops the old copy.
+// The ?v= of the css and js files has to match the one in index.html and
+// ruletas.html: that is what makes browsers download the new file.
+const CACHE = 'family-trivia-v5';
 
 const PRECACHE = [
   './',
   'index.html',
   'ruletas.html',
-  'css/styles.css?v=20260910g',
-  'js/questions.js?v=20260910g',
-  'js/script.js?v=20260910g',
-  'js/ruletas.js?v=20260910g',
-  'js/footer.js?v=20260910g',
+  'css/styles.css?v=20261006',
+  'js/questions.js?v=20261006',
+  'js/audio-player.js?v=20261006',
+  'js/script.js?v=20261006',
+  'js/ruletas.js?v=20261006',
+  'js/confetti.js?v=20261006',
+  'js/footer.js?v=20261006',
+  'js/button-border.js?v=20261006',
+  'js/offline.js?v=20261006',
   'vendor/bootstrap/bootstrap.min.css',
   'vendor/bootstrap/bootstrap.bundle.min.js',
   'vendor/bootstrap-icons/bootstrap-icons.min.css',
@@ -59,9 +63,9 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.includes('/audios/')) return;   // streamed straight from the network
 
   const isPage = request.mode === 'navigate' || request.destination === 'document';
-  // The game's own code changes with every deploy. Serving it from the cache
-  // while the page comes from the network mixes versions (new HTML with old CSS),
-  // so ask the network first and keep the cache only as an offline fallback.
+  // Our own code changes on every deploy. Taking it from the cache while the
+  // page comes from the network mixes versions (new HTML with old CSS), so we
+  // ask the network first and keep the copy only for when there is no signal.
   const isOwnCode = /\/(css|js)\//.test(url.pathname);
 
   if (isPage || isOwnCode) {
@@ -74,9 +78,9 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        // ignoreSearch so an offline device still finds css/js in the cache after
-        // the ?v= changes: without it, forgetting to update PRECACHE here would
-        // silently break offline play.
+        // ignoreSearch so the saved copy is still found after the ?v= changes.
+        // Without it, forgetting to update the list above would quietly break
+        // the game when there is no connection.
         .catch(() => caches.match(request, { ignoreSearch: true })
           .then(hit => hit || (isPage ? caches.match('index.html') : undefined)))
     );

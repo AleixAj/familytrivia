@@ -300,8 +300,12 @@ FamilyProject/
 ├── js/
 │   ├── questions.js
 │   ├── script.js
+│   ├── audio-player.js
 │   ├── ruletas.js
-│   └── footer.js
+│   ├── confetti.js
+│   ├── button-border.js
+│   ├── footer.js
+│   └── offline.js
 ├── vendor/
 │   ├── bootstrap/
 │   ├── bootstrap-icons/
@@ -311,6 +315,17 @@ FamilyProject/
 ├── img/
 └── audios/
 ```
+
+Què fa cada fitxer de `js/`:
+
+- `questions.js`: les preguntes, les categories i les puntuacions del tauler.
+- `script.js`: el joc. Navegació, tauler, preguntes, puntuació i rànquing final.
+- `audio-player.js`: el reproductor de les preguntes amb banda sonora.
+- `ruletas.js`: les dues ruletes que formen les parelles.
+- `confetti.js`: el confeti de la pantalla final.
+- `button-border.js`: la vora animada dels botons principals.
+- `footer.js`: el peu de pàgina, compartit per les dues pàgines.
+- `offline.js`: registra `sw.js` per poder jugar sense connexió.
 
 ## Editar preguntes
 
@@ -331,7 +346,7 @@ Per canviar les categories o els valors del tauler, edita:
 - `categories`: noms de les categories.
 - `values`: puntuacions disponibles.
 
-L'arxiu `index.html` carrega primer `js/questions.js` i després `js/script.js`, així que l'ordre d'aquests scripts és important.
+Els scripts es carreguen en ordre i no són mòduls, així que comparteixen les mateixes variables globals. `index.html` carrega `js/questions.js` abans que `js/script.js`, i `js/audio-player.js` també abans, perquè `script.js` fa servir el reproductor.
 
 ## Funciona sense connexió
 

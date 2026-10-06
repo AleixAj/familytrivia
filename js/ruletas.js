@@ -35,9 +35,9 @@ function initRuletasPage() {
     const logicalW = rect.width;
     const logicalH = rect.height;
 
-    // The wheel can be measured before the layout exists (hidden tab, page still
-    // loading). Writing a zero size there blanks the canvas for good and makes
-    // the drawing calls throw, so keep the last good size and try again later.
+    // The wheel can be measured before the page has a layout (hidden tab, still
+    // loading). Saving a size of zero there leaves the canvas blank for good and
+    // makes the drawing fail, so we keep the last good size and try again later.
     if (!(logicalW > 0) || !(logicalH > 0)) {
       this.ready = false;
       return;
@@ -319,8 +319,6 @@ function initRuletasPage() {
 
   window.addEventListener('load', () => {
     resizeAllCanvases();
-    highlightActiveButton();
-    resizeAllCanvases();
   });
   window.addEventListener('resize', () => { resizeAllCanvases(); });
 
@@ -328,11 +326,9 @@ function initRuletasPage() {
   const spinBothBtn = document.getElementById('spinBothBtn');
   const teamsListEl = document.getElementById('teamsList');
   const clearTeamsBtn = document.getElementById('clearTeamsBtn');
-  // The pairs live in localStorage now, like the rest of the progress, so they
-  // survive a closed tab. On F5 we still ask before throwing them away.
-  const _navType = (performance.getEntriesByType?.('navigation')?.[0]?.type)
-    ?? (performance.navigation?.type === 1 ? 'reload' : 'navigate');
-
+  // The pairs are saved like the rest of the match, so they survive a closed
+  // tab. On F5 we still ask before throwing them away. getNavigationType is in
+  // script.js, which this page loads first.
   let teams = readStored(gameStore, 'ruletaTeams', []);
   if (!Array.isArray(teams)) teams = [];
 
@@ -343,7 +339,7 @@ function initRuletasPage() {
     gameStore.removeItem('ruletaTeamNames');
   };
 
-  if (_navType === 'reload') {
+  if (getNavigationType() === 'reload') {
     if (teams.length) {
       askResume({
         title: 'Tenéis equipos formados',
@@ -358,8 +354,8 @@ function initRuletasPage() {
     }
   }
 
-  // Both stores are rewritten from `teams` so removing a pair cannot leave a
-  // stale name behind: the board reads the names by index from localStorage.
+  // Both keys are written again from `teams`, so deleting a pair cannot leave an
+  // old name behind. The board reads those names by position.
   function syncTeams() {
     gameStore.setItem('ruletaTeams', JSON.stringify(teams));
     const saved = {};
@@ -560,9 +556,9 @@ function initRuletasPage() {
     });
   }
 
-  // A wheel measured before it has a size skips its drawing, so redraw as soon
-  // as the browser gives it one: a hidden tab, a slow layout or a rotated phone
-  // would otherwise leave an empty circle on screen.
+  // A wheel with no size yet does not draw itself, so we draw it again as soon
+  // as the browser gives it one. Without this, a hidden tab or a phone that is
+  // turned sideways could leave an empty circle on screen.
   if (typeof ResizeObserver !== 'undefined') {
     const redraw = new ResizeObserver(entries => {
       entries.forEach(entry => {

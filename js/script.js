@@ -1,8 +1,8 @@
 ﻿// ============================================================
 // Family Trivia - Main Game Controller
-// Handles navigation, board rendering, question modals, scoring,
-// game-state persistence, audio playback and final statistics.
-// Question content lives in js/questions.js.
+// Navigation, board, questions, scoring and the final ranking.
+// The questions are in js/questions.js, the soundtrack player in
+// js/audio-player.js and the wheels in js/ruletas.js.
 // ============================================================
 
 // ==================== UI UTILS ====================
@@ -24,14 +24,13 @@ function readStored(storage, key, fallback) {
   }
 }
 
-// Where the game keeps its progress: localStorage instead of sessionStorage, so
-// a closed tab (or a closed browser) does not throw an unfinished game away.
-// Some privacy settings make even reading window.localStorage throw, and this
-// runs while the script loads, so a failure here would leave the page dead
-// instead of just forgetful. Fall back to a memory-only store in that case: the
-// game works as usual, it just cannot remember anything once the page is gone.
-// 'familyTriviaStartGame' stays in sessionStorage on purpose: it is a one-shot
-// navigation flag, not progress.
+// Where the game saves the match. localStorage and not sessionStorage, so
+// closing the tab does not throw away a game that is still going.
+// With some privacy settings just reading localStorage throws an error, and
+// this line runs while the page loads, so we try it first and fall back to a
+// copy in memory. The game still works, it only forgets when the page closes.
+// 'familyTriviaStartGame' stays in sessionStorage: it is a navigation flag
+// that is used once, not progress.
 const gameStore = (() => {
   try {
     const store = window.localStorage;
@@ -99,10 +98,10 @@ function goToGamePanel() {
     showToast('No has formado ninguna pareja: se usarán los 5 equipos por defecto', 'info');
   }
 
-  // A different set of teams means the previous board no longer fits: start clean.
-  // The saved game now outlives the tab, so matching only the number of teams
-  // would let a brand new group inherit last week's points. When there are pairs
-  // we compare the names too; with no pairs formed the count is all we have.
+  // Different teams means the old board no longer fits, so we start clean.
+  // The names are compared too: counting the teams is not enough now that the
+  // match survives a closed tab, or a new group of the same size would walk in
+  // with last week's points.
   const savedState = readStored(gameStore, GAME_STATE_KEY, {});
   const savedCount = Number(savedState.teamCount) || null;
   if (savedCount) {
@@ -167,9 +166,9 @@ function closeRulesModal() {
 }
 
 // ==================== GAME MODE ====================
-// 'solo'    -> 1 tarjeta
-// 'players' -> N tarjetas, una por persona
-// 'teams'   -> 5 equipos formados en ruletas.html
+// 'solo'    -> one card
+// 'players' -> one card per person
+// 'teams'   -> one card per pair formed in ruletas.html
 const GAME_MODE_KEY = 'familyTriviaMode';
 const TEAM_COUNT_KEY = 'familyTriviaTeamCount';
 const CUSTOM_NAMES_KEY = 'familyTriviaNames';
@@ -392,25 +391,6 @@ function startGamePanelFromNavigation() {
   startTrivia();
 }
 
-function highlightActiveButton() {
-  const pathname = window.location.pathname.toLowerCase().replace(/\/$/, ''); // remove trailing slash if present
-
-  const testBtn = document.querySelector('.nav-btn.test');
-  const ruletasBtn = document.querySelector('.nav-btn.ruletas');
-
-  if (!testBtn || !ruletasBtn) return;
-
-  testBtn.classList.remove('active');
-  ruletasBtn.classList.remove('active');
-
-  // Keep active navigation state resilient across local paths and static hosting URLs.
-  if (pathname.endsWith('ruletas') || pathname.endsWith('ruletas.html') || pathname.includes('/ruletas')) {
-    ruletasBtn.classList.add('active');
-  } else {
-    testBtn.classList.add('active');
-  }
-}
-
 // ==================== BOARD SETUP ====================
 // ruletas.html loads this file without js/questions.js, so guard the categories lookup.
 const cols = typeof categories === 'undefined' ? 0 : categories.length;
@@ -465,16 +445,6 @@ function setQuestionStatus(message = '') {
 }
 
 // ==================== DOM ELEMENT REFERENCES ====================
-const audio = document.getElementById('audioPlayer');
-const playBtn = document.getElementById('playBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const progressBar = document.getElementById('progressBar');
-const progressFill = document.getElementById('progressFill');
-const progressHandle = document.getElementById('progressHandle');
-const currentTimeLabel = document.getElementById('currentTime');
-const totalTimeLabel = document.getElementById('totalTime');
-const audioControlsWrap = document.getElementById('audioControls');
-const progressWrap = document.getElementById('progressWrap');
 const resolveBtn = document.getElementById('resolveBtn');
 const optionsDiv = document.getElementById('options');
 const questionInfoDiv = document.getElementById('questionInfo');
@@ -488,9 +458,8 @@ const hintBtn = document.getElementById('hintBtn');
 const hintContainer = document.getElementById('hintContainer');
 const hintText = document.getElementById('hintText');
 
-// Final overlay and confetti elements
+// Final ranking elements
 const finalOverlay = document.getElementById('finalOverlay');
-const confettiCanvas = document.getElementById('confettiCanvas');
 const winnerColorEl = document.getElementById('winnerColor');
 const winnerAnnouncementEl = document.getElementById('winnerAnnouncement');
 const winnerScoreEl = document.getElementById('winnerScore');
@@ -679,93 +648,22 @@ function syncTeamNamesFromStorage(gameStateNames) {
   }
 }
 
-// ==================== VOLUME CONTROL ====================
-let volumeSlider = null;
-let volumeIcon = null;
-let currentAudioVolume = 0.85;
-
-function updateVolumeIcon() {
-  if (!volumeIcon || !audio) return;
-  
-  if (audio.volume === 0) {
-    volumeIcon.textContent = '🔇';
-  } else if (audio.volume < 0.3) {
-    volumeIcon.textContent = '🔈';
-  } else if (audio.volume < 0.65) {
-    volumeIcon.textContent = '🔉';
-  } else {
-    volumeIcon.textContent = '🔊';
-  }
-}
-
-function initVolumeControl() {
-  // Audio question markup is rebuilt per modal open, so refresh element references each time.
-  volumeSlider = document.getElementById('volumeSlider');
-  volumeIcon = document.getElementById('volumeIcon');
-
-  if (!volumeSlider || !audio) {
-    return;
-  }
-
-  audio.volume = currentAudioVolume;
-  volumeSlider.value = currentAudioVolume;
-  updateVolumeIcon();
-
-  // Keep the audio element and slider value synchronized.
-  const inputHandler = () => {
-    currentAudioVolume = parseFloat(volumeSlider.value);
-    audio.volume = currentAudioVolume;
-    updateVolumeIcon();
-  };
-
-  if (volumeSlider._inputHandler) volumeSlider.removeEventListener('input', volumeSlider._inputHandler);
-  volumeSlider._inputHandler = inputHandler;
-  volumeSlider.addEventListener('input', inputHandler);
-
-  // Toggle mute from the volume icon while preserving the previous volume.
-  if (volumeIcon) {
-    const clickHandler = () => {
-      if (audio.volume > 0) {
-        audio.dataset.lastVolume = audio.volume;
-        audio.volume = 0;
-        volumeSlider.value = 0;
-      } else {
-        const lastVol = parseFloat(audio.dataset.lastVolume) || 0.85;
-        audio.volume = lastVol;
-        volumeSlider.value = lastVol;
-        currentAudioVolume = lastVol;
-      }
-      updateVolumeIcon();
-    };
-
-    if (volumeIcon._clickHandler) volumeIcon.removeEventListener('click', volumeIcon._clickHandler);
-    volumeIcon._clickHandler = clickHandler;
-    volumeIcon.addEventListener('click', clickHandler);
-  }
-}
-
 // ==================== SCORE MANAGEMENT ====================
 function renderScore(teamIndex) {
-  const text = `${teamScores[teamIndex]} Pts`;
-  const el = document.getElementById(`score-${teamIndex}`);
-  if (el) el.innerText = text;
-  const top = document.getElementById(`score-top-${teamIndex}`);
-  if (top) top.innerText = text;
+  const el = document.getElementById(`score-top-${teamIndex}`);
+  if (el) el.innerText = `${teamScores[teamIndex]} Pts`;
 }
 
 function animateScoreChange(teamIndex, delta) {
-  const targets = [
-    document.getElementById(`score-${teamIndex}`),
-    document.getElementById(`score-top-${teamIndex}`)
-  ].filter(Boolean);
-  const cls = delta >= 0 ? 'score-flash-up' : 'score-flash-down';
+  const el = document.getElementById(`score-top-${teamIndex}`);
+  if (!el) return;
 
-  targets.forEach(el => {
-    el.classList.remove('score-flash-up', 'score-flash-down');
-    void el.offsetWidth;
-    el.classList.add(cls);
-    el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
-  });
+  const cls = delta >= 0 ? 'score-flash-up' : 'score-flash-down';
+  el.classList.remove('score-flash-up', 'score-flash-down');
+  // Reading the width restarts the animation when the score changes twice in a row.
+  void el.offsetWidth;
+  el.classList.add(cls);
+  el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
 }
 
 function applyTeamNeonBorders() {
@@ -1157,41 +1055,6 @@ function resetAllScores() {
   saveGameState();
 }
 
-// ==================== AUDIO CONTROLS ====================
-function formatTime(sec) {
-  if (!isFinite(sec) || sec <= 0) return '0:00';
-  const s = Math.floor(sec % 60);
-  const m = Math.floor(sec / 60);
-  return `${m}:${s.toString().padStart(2,'0')}`;
-}
-
-function updateProgressUI() {
-  if (!audio || !progressBar || !progressFill || !progressHandle || !currentTimeLabel || !totalTimeLabel) return;
-  const dur = audio.duration || 0;
-  const cur = audio.currentTime || 0;
-  const pct = dur ? (cur / dur) * 100 : 0;
-  progressFill.style.width = pct + '%';
-  progressHandle.style.left = pct + '%';
-  currentTimeLabel.innerText = formatTime(cur);
-  totalTimeLabel.innerText = formatTime(dur);
-}
-
-function resetAudioControls() {
-  if (audio) {
-    audio.pause();
-    audio.currentTime = 0;
-  }
-  if (playBtn) {
-    playBtn.style.display = 'none';
-    playBtn.disabled = false;
-  }
-  if (pauseBtn) {
-    pauseBtn.style.display = 'none';
-    pauseBtn.disabled = true;
-  }
-  updateProgressUI();
-}
-
 // ==================== INDEX PAGE INIT ====================
 function initIndexPage() {
   if (!document.getElementById('overlay')) return;
@@ -1201,49 +1064,7 @@ function initIndexPage() {
   for (let i = 0; i < teamScores.length; i++) renderScore(i);
   applyTeamNeonBorders();
 
-  if (playBtn && pauseBtn && audio) {
-    const attachListeners = () => {
-      playBtn.onclick = () => {
-        audio.play().catch(() => {});
-        playBtn.style.display = 'none';
-        pauseBtn.style.display = 'block';
-        playBtn.disabled = true;
-        pauseBtn.disabled = false;
-      };
-      pauseBtn.onclick = () => {
-        audio.pause();
-        playBtn.style.display = 'block';
-        pauseBtn.style.display = 'none';
-        playBtn.disabled = false;
-        pauseBtn.disabled = true;
-      };
-    };
-    attachListeners();
-    audio.addEventListener('timeupdate', updateProgressUI);
-    audio.addEventListener('loadedmetadata', updateProgressUI);
-    // A missing or unplayable file would otherwise leave the presenter waiting.
-    audio.addEventListener('error', () => {
-      if (!audio.getAttribute('src')) return;
-      setQuestionStatus('No se ha podido cargar el audio de esta pregunta. Puedes cambiarla con el boton de recargar.');
-      playBtn.disabled = true;
-      pauseBtn.disabled = true;
-    });
-    audio.addEventListener('ended', () => {
-      playBtn.style.display = 'block';
-      pauseBtn.style.display = 'none';
-      playBtn.disabled = false;
-      pauseBtn.disabled = true;
-      updateProgressUI();
-    });
-    // Re-attach playBtn/pauseBtn onclick handlers on overlay click in case they were lost
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('#overlay') && playBtn.style.display === 'none') {
-        attachListeners();
-      }
-    });
-  }
-
-  resetAudioControls();
+  initAudioPlayer();
 
   if (toggleRevealBtn) {
     toggleRevealBtn.addEventListener('click', () => {
@@ -1277,40 +1098,6 @@ function initIndexPage() {
         revealedAudioCells.delete(cellKey);
         saveGameState();
       }
-    });
-  }
-
-  // Seek by clicking or dragging the progress bar.
-  if (progressBar) {
-    const seekToPointer = (e) => {
-      if (!audio || !audio.duration || isNaN(audio.duration) || !isFinite(audio.duration)) return;
-
-      const rect = progressBar.getBoundingClientRect();
-      const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
-      const clickX = clientX - rect.left;
-      const percentage = Math.max(0, Math.min(1, clickX / rect.width));
-
-      audio.currentTime = percentage * audio.duration;
-      updateProgressUI();
-    };
-
-    progressBar.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      seekToPointer(e);
-      progressBar.setPointerCapture?.(e.pointerId);
-
-      const onMove = (moveEvent) => seekToPointer(moveEvent);
-      const onUp = (upEvent) => {
-        seekToPointer(upEvent);
-        progressBar.releasePointerCapture?.(upEvent.pointerId);
-        progressBar.removeEventListener('pointermove', onMove);
-        progressBar.removeEventListener('pointerup', onUp);
-        progressBar.removeEventListener('pointercancel', onUp);
-      };
-
-      progressBar.addEventListener('pointermove', onMove);
-      progressBar.addEventListener('pointerup', onUp);
-      progressBar.addEventListener('pointercancel', onUp);
     });
   }
 
@@ -1399,7 +1186,7 @@ function hasSavedProgress() {
   return Boolean(scored || played || opened);
 }
 
-// Shared "continue or start over" dialog, used after a reload.
+// The "continue or start over" dialog. Both pages use it.
 function askResume({ title, text, keepLabel, resetLabel, onKeep, onReset }) {
   const el = document.getElementById('resumeModal');
   const keepBtn = document.getElementById('resumeKeepBtn');
@@ -1607,6 +1394,29 @@ function restoreGameState() {
 }
 
 // ==================== QUESTION LOGIC ====================
+// The explanation box is shown and hidden from several places, so both states
+// live here to keep them in sync.
+function showExplanation(text) {
+  const el = document.getElementById('explanation');
+  if (!el || !text) return;
+  el.innerText = text;
+  el.classList.add('explanation-visible');
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  el.style.visibility = 'visible';
+  el.setAttribute('aria-hidden', 'false');
+}
+
+function hideExplanation() {
+  const el = document.getElementById('explanation');
+  if (!el) return;
+  el.classList.remove('explanation-visible');
+  el.style.display = 'none';
+  el.style.opacity = '0';
+  el.innerText = '';
+  el.setAttribute('aria-hidden', 'true');
+}
+
 function openQuestion(row, col, btnElement) {
   if (!questionText || !optionsDiv || !resolveBtn || !audioControlsWrap || !progressWrap) return;
   setQuestionStatus('');
@@ -1644,17 +1454,8 @@ function openQuestion(row, col, btnElement) {
         hiddenAnswerDiv.innerText = '';
         hiddenAnswerDiv.style.display = 'none';
       }
-      const explanationEl = document.getElementById('explanation');
-      if (explanationEl) {
-        explanationEl.classList.remove('explanation-visible');
-        explanationEl.innerText = '';
-        explanationEl.style.display = 'none';
-      }
-      if (audio) {
-        audio.pause();
-        audio.removeAttribute('src');
-        audio.load();
-      }
+      hideExplanation();
+      clearAudioSource();
       showQuestionOverlay();
       return;
     }
@@ -1742,11 +1543,7 @@ function openQuestion(row, col, btnElement) {
       hiddenAnswerDiv.setAttribute('aria-hidden', 'true');
     }
 
-    const explanationEl = document.getElementById('explanation');
-    if (explanationEl) {
-      explanationEl.classList.remove('explanation-visible');
-      explanationEl.style.display = 'none';
-    }
+    hideExplanation();
     if (toggleRevealBtn) {
       document.getElementById('toggleRevealText').textContent = 'Revelar película';
     }
@@ -1769,11 +1566,7 @@ function openQuestion(row, col, btnElement) {
     if (resolveBtn) resolveBtn.style.display = 'inline-block';
     if (toggleRevealBtn) toggleRevealBtn.style.display = 'none';
 
-    if (audio) {
-      audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
-    }
+    clearAudioSource();
 
     // Render options only for multiple-choice questions, not riddles.
     if (categoryName !== 'Adivinanzas' && q && Array.isArray(q.opciones)) {
@@ -1813,15 +1606,7 @@ function openQuestion(row, col, btnElement) {
 
     // Restore state when reopening an already resolved cell.
     if (savedState && savedState.explanationVisible) {
-      const explanationEl = document.getElementById('explanation');
-      if (explanationEl && currentQuestion && currentQuestion.explicacion) {
-        explanationEl.innerText = currentQuestion.explicacion;
-        explanationEl.classList.add('explanation-visible');
-        explanationEl.style.display = 'block';
-        explanationEl.style.opacity = '1';
-        explanationEl.style.visibility = 'visible';
-        explanationEl.setAttribute('aria-hidden', 'false');
-      }
+      showExplanation(currentQuestion?.explicacion);
 
       const options = document.querySelectorAll('.option');
       if (options.length > 0) {
@@ -1865,11 +1650,7 @@ function resolveQuestion() {
   const cellKey = `${currentRow}-${currentCol}`;
 
   if (explanationEl.classList.contains('explanation-visible')) {
-    // hide explanation
-    explanationEl.classList.remove('explanation-visible');
-    explanationEl.style.display = 'none';
-    explanationEl.innerText = '';
-    explanationEl.setAttribute('aria-hidden', 'true');
+    hideExplanation();
 
     document.querySelectorAll('.option').forEach(opt => {
       opt.classList.remove('correct', 'incorrect');
@@ -1897,14 +1678,7 @@ function resolveQuestion() {
     currentButton.setAttribute('aria-disabled', 'true');
   }
 
-  if (currentQuestion && currentQuestion.explicacion) {
-    explanationEl.innerText = currentQuestion.explicacion;
-    explanationEl.classList.add('explanation-visible');
-    explanationEl.style.display = 'block';
-    explanationEl.style.opacity = '1';
-    explanationEl.style.visibility = 'visible';
-    explanationEl.setAttribute('aria-hidden', 'false');
-  }
+  showExplanation(currentQuestion?.explicacion);
 
   const resolveBtnText = document.getElementById('resolveBtnText');
   if (resolveBtnText) resolveBtnText.textContent = 'Ocultar respuesta';
@@ -1964,13 +1738,7 @@ function changeCurrentQuestion() {
   const optionsDivEl = document.getElementById('options');
   if (optionsDivEl) optionsDivEl.innerHTML = '';
 
-  const explanationEl = document.getElementById('explanation');
-  if (explanationEl) {
-    explanationEl.classList.remove('explanation-visible');
-    explanationEl.style.display = 'none';
-    explanationEl.innerText = '';
-    explanationEl.setAttribute('aria-hidden', 'true');
-  }
+  hideExplanation();
 
   // Reopen the same cell with a fresh question (no scoring screen in between).
   openQuestion(currentRow, currentCol, currentButton);
@@ -1983,12 +1751,7 @@ function closeOverlay(skipAward = false) {
   }
   const closedQuestion = currentQuestion;
   currentQuestion = null;
-  if (audio) {
-    audio.pause();
-    audio.currentTime = 0;
-    audio.removeAttribute('src');
-    audio.load();
-  }
+  clearAudioSource();
   resetAudioControls();
   if (audioControlsWrap) {
     audioControlsWrap.style.display = 'none';
@@ -2001,16 +1764,7 @@ function closeOverlay(skipAward = false) {
   if (resolveBtnText) resolveBtnText.textContent = 'Resolver';
   if (resolveBtn) { const i = resolveBtn.querySelector('i'); if (i) i.classList.replace('bi-lock-fill', 'bi-unlock-fill'); }
   
-  // Hide and clear ALL overlay content elements
-  const explanationEl = document.getElementById('explanation');
-  if (explanationEl) {
-    explanationEl.classList.remove('explanation-visible');
-    explanationEl.style.display = 'none';
-    explanationEl.innerText = '';
-    explanationEl.style.minHeight = '0px';
-    explanationEl.style.opacity = '0';
-    explanationEl.setAttribute('aria-hidden', 'true');
-  }
+  hideExplanation();
   
   if (hiddenAnswerDiv) {
     hiddenAnswerDiv.style.display = 'none';
@@ -2077,7 +1831,7 @@ function showFinalRanking() {
   const finalActionBtns = document.querySelectorAll('#finalOverlay .final-actions button, #finalOverlay .final-actions .btn');
   finalActionBtns.forEach(btn => {
     btn.style.backgroundColor = winner.color;
-    btn.style.color = '#fff';           // Ensure readable text over team colors.
+    btn.style.color = '#fff';           // Keep the text readable on any team colour.
   });
 
   rankingListEl.innerHTML = '';
@@ -2342,91 +2096,21 @@ function resetBoardAndScores() {
 
 }
 
-let confettiCtx = null;
-let confettiParticles = [];
-let confettiRAF = null;
-
-function startConfetti() {
-  if (!confettiCanvas) return;
-  confettiCanvas.width = window.innerWidth;
-  confettiCanvas.height = window.innerHeight;
-  confettiCtx = confettiCanvas.getContext('2d');
-  confettiParticles = [];
-  const colors = ["#ff3b3b", "#00eaff", "#00ff88", "#ffd93b", "#ff00ff", "#ffffff"];
-  for (let i = 0; i < 140; i++) {
-    confettiParticles.push({
-      x: Math.random() * confettiCanvas.width,
-      y: Math.random() * -confettiCanvas.height,
-      vx: (Math.random() - 0.5) * 1.5,
-      vy: 1.5 + Math.random() * 1.5,
-      size: 10 + Math.random() * 10,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      rot: Math.random() * 360,
-      rotSpeed: (Math.random() - 0.5) * 10
-    });
-  }
-  function frame() {
-    if (!confettiCtx) return;
-    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    confettiParticles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.rot += p.rotSpeed;
-      p.x += Math.sin(p.y * 0.02) * 0.5;
-      confettiCtx.save();
-      confettiCtx.translate(p.x, p.y);
-      confettiCtx.rotate(p.rot * Math.PI / 180);
-      confettiCtx.shadowColor = p.color;
-      confettiCtx.shadowBlur = 10;
-      confettiCtx.fillStyle = p.color;
-      confettiCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 0.6);
-      confettiCtx.restore();
-    });
-    confettiParticles.forEach(p => {
-      if (p.y > confettiCanvas.height + 20) {
-        p.x = Math.random() * confettiCanvas.width;
-        p.y = -20;
-      }
-    });
-    confettiRAF = requestAnimationFrame(frame);
-  }
-  if (!confettiRAF) frame();
-  window.addEventListener('resize', onConfettiResize);
-}
-
-function stopConfetti() {
-  if (confettiRAF) cancelAnimationFrame(confettiRAF);
-  confettiRAF = null;
-  if (confettiCtx && confettiCanvas) {
-    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-  }
-  window.removeEventListener('resize', onConfettiResize);
-}
-
-function onConfettiResize() {
-  if (confettiCanvas) {
-    confettiCanvas.width = window.innerWidth;
-    confettiCanvas.height = window.innerHeight;
-  }
-}
-
-// Ruletas lives in js/ruletas.js. script.js keeps shared helpers and Family Trivia only.
+// The wheels, the player and the confetti live in their own files.
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Ask before throwing away a game that is actually in progress. The saved game
-  // outlives the tab now, so the offer to resume is not limited to F5: reopening
-  // the page days later must find the board exactly as it was left.
-  // Arriving straight from the mode setup or the wheels is an explicit choice,
-  // so that path skips the question.
-  // On ruletas.html the wheels script owns this decision, so don't wipe anything here.
+  // Ask before throwing away a match that is still going. It is not only about
+  // F5 any more: the match survives a closed tab, so opening the page days later
+  // has to find the board as it was left. Coming from the mode screen or from
+  // the wheels is a deliberate choice, so that path does not ask.
+  // On ruletas.html the wheels script decides this, so nothing is wiped here.
   const onGamePage = isIndexGamePage();
-  // A reload keeps the ?start=1 of the setup in the address bar, so only treat
-  // it as an explicit entry when the page was actually navigated to.
+  // A reload keeps the ?start=1 in the address bar, so it only counts as coming
+  // from the setup when the page was really navigated to.
   const arrivingFromSetup = shouldStartGamePanel() && getNavigationType() !== 'reload';
   const resumableGame = onGamePage && !arrivingFromSetup && hasSavedProgress();
   if (onGamePage && !resumableGame) clearSavedGameOnReload();
 
-  highlightActiveButton();
   buildBoard();
   applyGameMode();
   restoreGameState();
@@ -2507,7 +2191,6 @@ document.addEventListener('DOMContentLoaded', () => {
     rulesModal.querySelector('.btn-close')?.addEventListener('click', closeRulesModal);
   }
 });
-
 
 function toggleFinalStats() {
   const statsPanel = document.getElementById('statsPanel');

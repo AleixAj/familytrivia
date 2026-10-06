@@ -46,9 +46,7 @@
   image-rendering: pixelated;
   margin: 32px 0 0;
 }
-.game-title-img--sm {
-  max-height: 38px;
-}
+
 .game-title-img--lg {
   max-height: 150px;
   margin: 20px 0 20px;
@@ -196,13 +194,7 @@
   transform: scale(1.03);
 }
 
-.nav-ruleta-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  image-rendering: pixelated;
-  display: block;
-}
+
 
 .nav-brand-icon {
   width: 40px;
@@ -369,31 +361,11 @@
   color: #f8fafc;
 }
 
-.nav-btn {
-  padding: 12px 28px;
-  font-size: 16px;
-  font-weight: 600;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
 
-.nav-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-}
 
-.nav-btn.active {
-  background: var(--accent) !important;
-  color: #0f172a !important;
-  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.4);
-}
+
+
+
 
 /* ==================== INTRO SCREEN (shared) ==================== */
 .intro-box {
@@ -407,7 +379,7 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
-.intro-icon-big { font-size: 3.8rem; margin-bottom: 4px; }
+
 
 .intro-trivia-img {
   width: 160px;
@@ -416,16 +388,7 @@
   margin-bottom: 24px;
 }
 
-.intro-title {
-  font-size: 2.2rem;
-  font-weight: 900;
-  background: linear-gradient(90deg, var(--accent), #f97316);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0 0 14px;
-  text-align: center;
-}
+
 
 .intro-desc {
   color: var(--muted);
@@ -1389,12 +1352,7 @@ h1 {
 #team-3 .team-name { color: var(--team-yellow); }
 #team-4 .team-name { color: var(--team-purple); }
 
-.team-score {
-  font-size: 34px;
-  font-weight: 800;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
+
 
 .team-score.score-flash-up,
 .team-score-header.score-flash-up {
@@ -2029,7 +1987,7 @@ h1 {
   margin-bottom: 48px;
 }
 
-.teams-panel-wget {
+.teams-panel-widget {
   width: 100%;
   max-width: 520px;
 }
@@ -2095,28 +2053,11 @@ h1 {
   animation: listItemIn 0.34s cubic-bezier(.2, 1, .25, 1) both;
 }
 
-.teams-section {
-  width: 100%;
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
 
-.teams-section .wheel-card {
-  width: 100%;
-}
 
-.teams-section .wheel-title {
-  text-align: center;
-  margin-bottom: 12px;
-}
 
-.teams-section .names-list {
-  min-height: auto;
-  max-height: none;
-  overflow: visible;
-}
+
+
 
 /* ==================== ANIMATIONS ==================== */
 @keyframes fadeIn {
@@ -2267,27 +2208,15 @@ h1 {
 }
 
 /* ==================== MEDIA QUERIES ==================== */
-@media (max-width: 1100px) {
-  .nav-btn {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-}
+
 
 @media (max-width: 900px) {
   .nav-bar {
     padding: 12px 14px;
     gap: 6px;
   }
-  .nav-btn {
-    padding: 8px 13px;
-    font-size: 12px;
-    gap: 4px;
-  }
-  .nav-ruleta-icon {
-    width: 16px;
-    height: 16px;
-  }
+
+
   .nav-brand-icon {
     width: 34px;
     height: 34px;
@@ -2361,11 +2290,7 @@ h1 {
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 5px;
   }
-  .nav-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-    white-space: nowrap;
-  }
+
   h1 {
     font-size: 22px;
     margin: 16px 0 12px 0;
@@ -2445,10 +2370,7 @@ h1 {
     margin-bottom: 3px;
     line-height: 1.15;
   }
-  .team-score {
-    font-size: 18px;
-    margin-bottom: 4px;
-  }
+
   .btn-small {
     padding: 4px 3px;
     font-size: clamp(10px, 2.8vw, 11px);
@@ -2535,10 +2457,7 @@ h1 {
     right: 6px;
     padding: 6px 8px;
   }
-  .nav-btn {
-    padding: 7px 10px;
-    font-size: 11px;
-  }
+
   .intro-box {
     margin: 34px auto 48px;
     padding: 28px 16px;

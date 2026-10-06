@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="vendor/fonts/fonts.css" />
     <link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="css/styles.css?v=20260910g" />
+    <link rel="stylesheet" href="css/styles.css?v=20261006" />
     <!-- Estilos criticos: los paneles emergentes nunca deben verse como bloques
          sueltos si la hoja principal llega tarde, falla o esta desactualizada. -->
     <style>
@@ -123,7 +123,7 @@
 
       <!-- Formed teams panel -->
       <div class="teams-panel-wrapper">
-        <div class="teams-panel-wget">
+        <div class="teams-panel-widget">
           <div class="wheel-card">
             <div class="wheel-title">Equipos Formados</div>
             <div id="teamsList" class="names-list"></div>
@@ -252,7 +252,7 @@
                 <li>Junto al turno hay un contador de casillas jugadas, y cuando se juega la última el juego avisa de que ya podéis finalizar.</li>
                 <li>La tecla <strong>Escape</strong> cierra la pregunta o el ranking.</li>
               </ul>
-              <p>Si recargas la página (F5) sin querer, el juego pregunta si quieres continuar la partida o empezar de nuevo, así que no se pierde nada.</p>
+              <p>La partida se guarda sola en el navegador: si recargas la página o cierras la pestaña sin querer, al volver a abrir el juego pregunta si quieres continuar o empezar de nuevo.</p>
             </section>
 
             <section class="rules-section">
@@ -265,8 +265,11 @@
     </div>
 
     <script defer src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
-    <script defer src="js/script.js?v=20260910g"></script>
-    <script defer src="js/ruletas.js?v=20260910g"></script>
-    <script defer src="js/footer.js?v=20260910g"></script>
+    <script defer src="js/audio-player.js?v=20261006"></script>
+    <script defer src="js/script.js?v=20261006"></script>
+    <script defer src="js/ruletas.js?v=20261006"></script>
+    <script defer src="js/footer.js?v=20261006"></script>
+    <script defer src="js/button-border.js?v=20261006"></script>
+    <script defer src="js/offline.js?v=20261006"></script>
   </body>
 </html>

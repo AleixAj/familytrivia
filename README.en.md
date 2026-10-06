@@ -300,8 +300,12 @@ FamilyProject/
 ├── js/
 │   ├── questions.js
 │   ├── script.js
+│   ├── audio-player.js
 │   ├── ruletas.js
-│   └── footer.js
+│   ├── confetti.js
+│   ├── button-border.js
+│   ├── footer.js
+│   └── offline.js
 ├── vendor/
 │   ├── bootstrap/
 │   ├── bootstrap-icons/
@@ -311,6 +315,17 @@ FamilyProject/
 ├── img/
 └── audios/
 ```
+
+What each file in `js/` does:
+
+- `questions.js`: the questions, the categories and the board values.
+- `script.js`: the game. Navigation, board, questions, scoring and final ranking.
+- `audio-player.js`: the player for the soundtrack questions.
+- `ruletas.js`: the two wheels that build the pairs.
+- `confetti.js`: the confetti on the final screen.
+- `button-border.js`: the animated border on the main buttons.
+- `footer.js`: the footer, shared by both pages.
+- `offline.js`: registers `sw.js` so the game can be played offline.
 
 ## Editing questions
 
@@ -331,7 +346,7 @@ To change the board's categories or values, edit:
 - `categories`: category names.
 - `values`: available point values.
 
-The `index.html` file loads `js/questions.js` first and then `js/script.js`, so the order of those scripts matters.
+The scripts are loaded in order and are not modules, so they share the same global variables. `index.html` loads `js/questions.js` before `js/script.js`, and `js/audio-player.js` before it too, because `script.js` uses the player.
 
 ## Works offline
 
