@@ -363,10 +363,6 @@ function initRuletasPage() {
     gameStore.setItem('ruletaTeamNames', JSON.stringify(saved));
   }
 
-  // First five keep the classic colours; the rest extend the palette for bigger groups.
-  const TEAM_COLORS      = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7',
-                            '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1',
-                            '#14b8a6', '#d946ef', '#38bdf8', '#fb7185', '#4ade80'];
   const TEAM_COLOR_NAMES = ['rojo', 'azul', 'verde', 'amarillo', 'morado',
                             'rosa', 'cian', 'naranja', 'lima', 'índigo',
                             'turquesa', 'magenta', 'cielo', 'coral', 'menta'];
@@ -374,8 +370,10 @@ function initRuletasPage() {
   // Light backgrounds need dark label text.
   const DARK_LABEL_TEAMS = new Set([4, 9, 13, 15]);
 
+  // The colour comes from script.js so a pair keeps the same one here and on
+  // the board. Each team is numbered from 1, the palette starts at 0.
   function teamColor(teamNumber) {
-    return TEAM_COLORS[teamNumber - 1] || '#6b7280';
+    return teamColorAt(teamNumber - 1);
   }
   function teamColorName(teamNumber) {
     return TEAM_COLOR_NAMES[teamNumber - 1] || `${teamNumber}`;
